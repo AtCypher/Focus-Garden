@@ -11,13 +11,17 @@ import { chooseTileForNewPlant, totalFocusMinutes } from '@/features/garden/layo
 import { getGardenLevel } from '@/data/gardenLevels';
 import { useUiStore } from './store/uiStore';
 import { grantEarnedSpecies } from '@/features/collection/grant';
+import { updateProgress } from '@/features/stats/progress';
 
 function useBoot() {
   useTheme();
   useEffect(() => {
     setPersistence(idbPersistence);
     loadAll()
-      .then((data) => useAppStore.getState().hydrate(data))
+      .then((data) => {
+        useAppStore.getState().hydrate(data);
+        updateProgress(new Date(), false);
+      })
       .catch((err) => {
         console.error('[grove] could not load data', err);
         useAppStore.getState().hydrate({});
@@ -34,6 +38,7 @@ function useBoot() {
       app.recordSession(session, plant);
       const after = getGardenLevel(totalFocusMinutes(useAppStore.getState().sessions)).level;
       if (after > before) useUiStore.getState().setLevelUp({ from: before, to: after });
+      updateProgress();
       grantEarnedSpecies();
     });
     return () => {

@@ -11,6 +11,7 @@ import {
   type ImportResult,
 } from '@/storage/exportImport';
 import { useTimerStore } from '@/features/timer/timerStore';
+import { updateProgress } from '@/features/stats/progress';
 
 export function DataSection() {
   const importAll = useAppStore((s) => s.importAll);
@@ -37,6 +38,7 @@ export function DataSection() {
   const confirmImport = () => {
     if (pending?.ok) {
       importAll(pending.data);
+      updateProgress(new Date(), false);
       setMessage(
         `Imported ${pending.summary.sessions} sessions and ${pending.summary.plants} plants.`,
       );

@@ -5,6 +5,7 @@ import { Button } from '@/app/ui/Button';
 import { SegmentedControl } from '@/app/ui/SegmentedControl';
 import { DewPill } from '@/app/ui/DewPill';
 import { plantableSpecies, unlockContext } from '@/features/collection/unlocks';
+import { summarize } from '@/features/stats/aggregate';
 import { PlantArt } from '@/art/PlantArt';
 import { DurationPicker } from './DurationPicker';
 import { StrictnessPicker } from './StrictnessPicker';
@@ -90,7 +91,12 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
     >
       <header className="text-center">
         <h1 className="font-display text-3xl font-semibold">Plant a seed</h1>
-        <DewPill className="mt-2" />
+        <div className="mt-2 flex items-center justify-center gap-2 text-xs">
+          <DewPill />
+          <span className="text-muted">
+            Today {summarize(sessions).today} / {settings.dailyGoalMinutes} min
+          </span>
+        </div>
         <p className="text-muted mt-1 text-sm">Stay with it and it grows. Leave and it may wilt.</p>
       </header>
 

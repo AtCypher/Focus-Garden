@@ -122,3 +122,19 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **Outfits equip instantly on purchase.** Switching back is free in the Seed Book.
 - **Locked species show a desaturated silhouette** of the real art rather than a generic shape, so
   the collection screen still hints at what the plant will look like.
+
+## Phase 7: stats, streaks, achievements
+
+- **A streak day is a day that meets the daily goal**, not merely any session. The goal is the
+  user's own number (default 60 minutes) and can be lowered in Settings. This makes the streak mean
+  something and keeps "one quick 10-minute session to keep the streak" honest.
+- **Days are finalised the morning after.** Today never breaks a streak while it is still running;
+  it only adds to the display once the goal is met. Finalisation is incremental (`lastEvaluated`),
+  so re-evaluating is idempotent and a long absence is processed in one pass.
+- **Freezes: one per 7 consecutive goal days, at most 3 banked, spent automatically** on the first
+  missed day. Frozen days are recorded so they are never re-judged.
+- **Achievements are re-evaluated after every session and once at boot** from the full data, so
+  imported histories unlock the right ones immediately. Unlock timestamps are kept once set.
+- **By-hour chart splits sessions across hour boundaries**, crediting each hour with the minutes
+  that actually fell in it.
+- **Stats page is code-split** so Recharts loads only when the page is opened.
