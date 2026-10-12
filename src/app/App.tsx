@@ -7,6 +7,9 @@ import { onSessionFinished } from '@/features/timer/timerStore';
 import { buildRecords } from '@/features/timer/recordSession';
 import { setPersistence, useAppStore } from './store/appStore';
 import { idbPersistence, loadAll } from '@/storage';
+import { chooseTileForNewPlant, totalFocusMinutes } from '@/features/garden/layout';
+import { getGardenLevel } from '@/data/gardenLevels';
+import { useUiStore } from './store/uiStore';
 
 function useBoot() {
   useTheme();
@@ -21,12 +24,15 @@ function useBoot() {
     const stopController = startSessionController();
     const offFinish = onSessionFinished((state) => {
       const app = useAppStore.getState();
+      const before = getGardenLevel(totalFocusMinutes(app.sessions)).level;
       const { session, plant } = buildRecords({
         state,
         existingSessions: app.sessions,
-        chooseTile: () => null,
+        chooseTile: (biome) => chooseTileForNewPlant(before, biome, app.plants, app.decorations),
       });
       app.recordSession(session, plant);
+      const after = getGardenLevel(totalFocusMinutes(useAppStore.getState().sessions)).level;
+      if (after > before) useUiStore.getState().setLevelUp({ from: before, to: after });
     });
     return () => {
       offFinish();

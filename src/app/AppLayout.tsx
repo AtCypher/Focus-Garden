@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { IconBook, IconChart, IconGarden, IconSettings, IconTimer } from './ui/icons';
+import { LevelUpDialog } from '@/features/garden/LevelUpDialog';
 
 const links = [
   { to: '/', label: 'Timer', Icon: IconTimer, end: true },
@@ -59,6 +60,7 @@ export function AppLayout() {
       <main id="main" className="flex-1 pb-24 md:pb-0" tabIndex={-1}>
         <Outlet />
       </main>
+      <LevelUpDialog />
     </div>
   );
 }

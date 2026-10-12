@@ -83,3 +83,27 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **Import and reset are disabled while a session runs**, so the live engine never references data
   that just disappeared.
 - **The app waits for hydration before rendering routes**, avoiding a flash of default settings.
+
+## Phase 5: garden
+
+- **Lifetime focus counts completed sessions only.** Wilted sessions are recorded honestly but do
+  not advance the garden level, so leaving early never "pays".
+- **Biomes are column strips** of one isometric grid, in catalogue order, so the garden reads as
+  neighbouring fields. When a new biome unlocks the strips are redistributed; a plant whose stored
+  tile is no longer inside its biome is re-seated at render time (never persisted), while plants
+  the user arranged keep their tile for as long as it stays valid.
+- **Full biomes overflow instead of growing without bound.** A garden with 300 hours of focus holds
+  far more plants than any tidy plot; the garden shows what fits (160 tiles at level 7) and reports
+  "+N more without room". Every plant is still in the history and period views.
+- **Period views reuse stored tiles.** "Today" shows today's plants where they live in the full
+  garden, so the view stays stable across periods.
+- **Restoration is quantised** to 0 / 25 / 50 / 100% by living plants per biome tile count, as the
+  brief asks, and drives both the ground colour and the legend.
+- **Scenery lives outside the plant grid.** Path, pond, hills, stream, snow caps, birds, stars and
+  fireflies are drawn around the plot so they never take tiles away from plants.
+- **Taps vs. drags.** The pan/zoom wrapper only captures pointers after 6px of movement, otherwise
+  pointer capture would retarget the click and plants could not be tapped.
+- **Arrange mode is tap-to-move** (select, "Move", tap a free tile) rather than drag-and-drop, so it
+  works with a keyboard and a screen reader and does not fight the pan gesture.
+- **Level-up detection happens in the finish handler**, comparing the level before and after the
+  session is recorded, and shows a before/after render of the same plants on both grids.

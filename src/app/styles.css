@@ -243,3 +243,46 @@ body {
   animation: plant-sway 5s ease-in-out infinite;
   transform-origin: 50% 85%;
 }
+
+/* Garden ambient animation. */
+@keyframes gd-flutter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -6px);
+  }
+  50% {
+    transform: translate(14px, 2px);
+  }
+  75% {
+    transform: translate(6px, -4px);
+  }
+}
+@keyframes gd-glow {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes gd-drift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(60px);
+  }
+}
+.gd-flutter {
+  animation: gd-flutter 6s ease-in-out infinite;
+}
+.gd-glow {
+  animation: gd-glow 2.4s ease-in-out infinite;
+}
+.gd-drift {
+  animation: gd-drift 30s linear infinite alternate;
+}
