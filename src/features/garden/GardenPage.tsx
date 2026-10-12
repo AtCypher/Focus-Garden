@@ -16,6 +16,7 @@ import { PERIODS, type Period } from './periods';
 import { season as seasonOf, timeOfDay, TIME_TINTS } from './daylight';
 import { biomeRegions } from './layout';
 import { renderGardenPng, shareOrDownload } from './shareImage';
+import { ambient, AmbientPlayer } from '@/features/timer/audio';
 import { useUiStore } from '@/app/store/uiStore';
 import { formatHours as fmtHours } from '@/lib/dates';
 
@@ -35,6 +36,9 @@ export function GardenPage() {
   const [placing, setPlacing] = useState<DecorationKind | null>(null);
   const showToast = useUiStore((s) => s.showToast);
   const [sharing, setSharing] = useState(false);
+  const [listening, setListening] = useState(false);
+  const ambientVolume = useAppStore((s) => s.settings.ambientVolume);
+  useEffect(() => () => ambient.stop(), []);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -179,6 +183,24 @@ export function GardenPage() {
           )}
         </p>
         <span className="flex gap-2">
+          {level.features.includes('ambient') && AmbientPlayer.supported() && (
+            <Button
+              size="sm"
+              variant={listening ? 'primary' : 'secondary'}
+              aria-pressed={listening}
+              onClick={() => {
+                if (listening) ambient.stop();
+                else
+                  ambient.play(
+                    timeOfDay(new Date(now)) === 'night' ? 'stream' : 'forest',
+                    ambientVolume,
+                  );
+                setListening(!listening);
+              }}
+            >
+              {listening ? 'Quiet' : 'Listen'}
+            </Button>
+          )}
           <Button
             size="sm"
             variant="secondary"
