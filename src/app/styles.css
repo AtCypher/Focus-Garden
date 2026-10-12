@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+
+  --color-moss-50: #f4f7f1;
+  --color-moss-100: #e4ecdc;
+  --color-moss-200: #c8dab9;
+  --color-moss-300: #a3c28e;
+  --color-moss-400: #7ca866;
+  --color-moss-500: #5b8c48;
+  --color-moss-600: #457036;
+  --color-moss-700: #2f6b4f;
+  --color-moss-800: #27452a;
+  --color-moss-900: #1f3923;
+  --color-moss-950: #14231b;
+
+  --color-soil-50: #faf6f0;
+  --color-soil-100: #f1e8da;
+  --color-soil-200: #e2d0b4;
+  --color-soil-300: #cfb08a;
+  --color-soil-400: #b98d63;
+  --color-soil-500: #a7764a;
+  --color-soil-600: #8d5f3b;
+  --color-soil-700: #714a30;
+  --color-soil-800: #5d3e2b;
+  --color-soil-900: #4d3425;
+
+  --color-dew-300: #a9dff0;
+  --color-dew-400: #6cc4e2;
+  --color-dew-500: #3ea6cd;
+  --color-dew-600: #2d85a7;
+
+  --color-bloom-400: #f0a3c0;
+  --color-bloom-500: #e4779f;
+  --color-bloom-600: #c9507c;
+
+  --color-sun-400: #f3c969;
+  --color-sun-500: #e9b23c;
+
+  --radius-xl2: 1.25rem;
+}
+
+:root {
+  color-scheme: light;
+  --bg: var(--color-moss-50);
+  --fg: #1f2a22;
+  --muted: #5b6b5e;
+  --card: #ffffff;
+  --card-border: var(--color-moss-100);
+  --accent: var(--color-moss-700);
+  --accent-fg: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: var(--color-moss-950);
+  --fg: #e8efe6;
+  --muted: #a3b3a6;
+  --card: #1b2d23;
+  --card-border: #27452a;
+  --accent: var(--color-moss-400);
+  --accent-fg: #0f1a13;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+@utility card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl2);
+}
+
+@utility text-muted {
+  color: var(--muted);
+}
+
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    outline: 3px solid var(--color-dew-500);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
