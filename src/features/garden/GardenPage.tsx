@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { TilePosition } from '@/types';
+import type { DecorationKind, TilePosition } from '@/types';
+import { DECORATION_INFO } from '@/data/decorations';
 import { useAppStore } from '@/app/store/appStore';
 import { SegmentedControl } from '@/app/ui/SegmentedControl';
 import { Button } from '@/app/ui/Button';
@@ -24,6 +25,11 @@ export function GardenPage() {
   const seasons = useAppStore((s) => s.settings.seasons);
   const movePlant = useAppStore((s) => s.movePlant);
   const moveDecoration = useAppStore((s) => s.moveDecoration);
+  const placeDecoration = useAppStore((s) => s.placeDecoration);
+  const removeDecoration = useAppStore((s) => s.removeDecoration);
+  const wallet = useAppStore((s) => s.wallet);
+  const decorations = useAppStore((s) => s.decorations);
+  const [placing, setPlacing] = useState<DecorationKind | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -40,7 +46,20 @@ export function GardenPage() {
   const regions = biomeRegions(level);
   const time = timeOfDay(new Date(now));
 
+  const inventory = (Object.keys(DECORATION_INFO) as DecorationKind[])
+    .map((kind) => ({
+      kind,
+      free:
+        (wallet.ownedDecorations[kind] ?? 0) - decorations.filter((d) => d.kind === kind).length,
+    }))
+    .filter((x) => x.free > 0);
+
   const onTile = (tile: TilePosition) => {
+    if (placing) {
+      placeDecoration(placing, tile);
+      setPlacing(null);
+      return;
+    }
     if (!moving) return;
     if (plants.some((p) => p.id === moving)) movePlant(moving, tile);
     else moveDecoration(moving, tile);
@@ -102,7 +121,7 @@ export function GardenPage() {
           time={time}
           season={seasons ? seasonOf(new Date(now)) : null}
           selectedId={selected}
-          arranging={arranging && moving !== null}
+          arranging={arranging && (moving !== null || placing !== null)}
           onSelectPlant={(id) => setSelected((cur) => (cur === id ? null : id))}
           onSelectDecoration={(id) => setSelected((cur) => (cur === id ? null : id))}
           onSelectTile={onTile}
@@ -134,17 +153,47 @@ export function GardenPage() {
           onClick={() => {
             setArranging((a) => !a);
             setMoving(null);
+            setPlacing(null);
           }}
         >
           {arranging ? 'Done arranging' : 'Arrange'}
         </Button>
       </div>
       {arranging && (
-        <p className="text-muted text-xs" role="status">
-          {moving
-            ? 'Now tap an empty tile in the same biome to move it there.'
-            : 'Tap a plant or decoration, then "Move".'}
-        </p>
+        <div className="card flex flex-col gap-2 p-3">
+          <p className="text-muted text-xs" role="status">
+            {placing
+              ? `Tap an empty tile to place the ${DECORATION_INFO[placing].name.toLowerCase()}.`
+              : moving
+                ? 'Now tap an empty tile in the same biome to move it there.'
+                : 'Tap a plant or decoration, then "Move". Or place something you own:'}
+          </p>
+          {inventory.length > 0 ? (
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Decorations to place">
+              {inventory.map(({ kind, free }) => (
+                <Button
+                  key={kind}
+                  size="sm"
+                  variant={placing === kind ? 'primary' : 'secondary'}
+                  aria-pressed={placing === kind}
+                  onClick={() => {
+                    setPlacing((p) => (p === kind ? null : kind));
+                    setMoving(null);
+                  }}
+                >
+                  {DECORATION_INFO[kind].name} ×{free}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted text-xs">
+              No unplaced decorations.{' '}
+              <Link to="/seeds" className="font-medium text-moss-700 underline dark:text-moss-300">
+                Buy some in the Seed Book.
+              </Link>
+            </p>
+          )}
+        </div>
       )}
 
       {selectedPlant && (
@@ -158,9 +207,21 @@ export function GardenPage() {
       {selected && !selectedPlant && arranging && (
         <div className="card flex items-center justify-between p-3 text-sm">
           <span>Decoration selected.</span>
-          <Button size="sm" variant="secondary" onClick={() => setMoving(selected)}>
-            Move
-          </Button>
+          <span className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setMoving(selected)}>
+              Move
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                removeDecoration(selected);
+                setSelected(null);
+              }}
+            >
+              Put away
+            </Button>
+          </span>
         </div>
       )}
 

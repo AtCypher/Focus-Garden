@@ -107,3 +107,18 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   works with a keyboard and a screen reader and does not fight the pan gesture.
 - **Level-up detection happens in the finish handler**, comparing the level before and after the
   session is recorded, and shows a before/after render of the same plants on both grids.
+
+## Phase 6: economy
+
+- **Two gates per species: biome and unlock.** A species can be planted only when its biome has
+  opened (garden level) and it is owned (starter, bought with dew, or earned by milestone). Milestone
+  species are granted automatically right after the session that earns them, with a toast.
+- **Shop prices.** Species 40–450 dew by rarity and biome; decorations 40–260; outfits 100–150. With
+  1 dew per minute plus bonuses, a first purchase lands after one or two sessions and the
+  legendary tier takes weeks. No timers, no bundles, no real money.
+- **Decorations are counted, not instanced, in the wallet.** Buying increments a count per kind;
+  placing creates an instance in the garden; "Put away" removes the instance and returns it to the
+  inventory. Several of the same kind can be owned and placed.
+- **Outfits equip instantly on purchase.** Switching back is free in the Seed Book.
+- **Locked species show a desaturated silhouette** of the real art rather than a generic shape, so
+  the collection screen still hints at what the plant will look like.

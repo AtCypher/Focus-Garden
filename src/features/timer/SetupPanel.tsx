@@ -3,7 +3,8 @@ import type { Strictness, TimerMode } from '@/types';
 import { useAppStore } from '@/app/store/appStore';
 import { Button } from '@/app/ui/Button';
 import { SegmentedControl } from '@/app/ui/SegmentedControl';
-import { SPECIES } from '@/data/species';
+import { DewPill } from '@/app/ui/DewPill';
+import { plantableSpecies, unlockContext } from '@/features/collection/unlocks';
 import { PlantArt } from '@/art/PlantArt';
 import { DurationPicker } from './DurationPicker';
 import { StrictnessPicker } from './StrictnessPicker';
@@ -38,6 +39,8 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
   const settings = useAppStore((s) => s.settings);
   const wallet = useAppStore((s) => s.wallet);
   const tags = useAppStore((s) => s.tags);
+  const sessions = useAppStore((s) => s.sessions);
+  const bestStreak = useAppStore((s) => s.streak.best);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
   const [mode, setMode] = useState<TimerMode>(settings.defaultMode);
@@ -52,8 +55,8 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
   const [tagId, setTagId] = useState<string | null>(settings.defaultTagId);
 
   const owned = useMemo(
-    () => SPECIES.filter((s) => wallet.ownedSpeciesIds.includes(s.id)),
-    [wallet.ownedSpeciesIds],
+    () => plantableSpecies(unlockContext(sessions, wallet, bestStreak)),
+    [sessions, wallet, bestStreak],
   );
   const effectiveStrictness: Strictness = needsOtherApps ? 'gentle' : strictness;
   const selected = owned.find((s) => s.id === speciesId) ?? owned[0];
@@ -87,6 +90,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
     >
       <header className="text-center">
         <h1 className="font-display text-3xl font-semibold">Plant a seed</h1>
+        <DewPill className="mt-2" />
         <p className="text-muted mt-1 text-sm">Stay with it and it grows. Leave and it may wilt.</p>
       </header>
 

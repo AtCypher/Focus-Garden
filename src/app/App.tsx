@@ -10,6 +10,7 @@ import { idbPersistence, loadAll } from '@/storage';
 import { chooseTileForNewPlant, totalFocusMinutes } from '@/features/garden/layout';
 import { getGardenLevel } from '@/data/gardenLevels';
 import { useUiStore } from './store/uiStore';
+import { grantEarnedSpecies } from '@/features/collection/grant';
 
 function useBoot() {
   useTheme();
@@ -33,6 +34,7 @@ function useBoot() {
       app.recordSession(session, plant);
       const after = getGardenLevel(totalFocusMinutes(useAppStore.getState().sessions)).level;
       if (after > before) useUiStore.getState().setLevelUp({ from: before, to: after });
+      grantEarnedSpecies();
     });
     return () => {
       offFinish();

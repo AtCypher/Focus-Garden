@@ -83,6 +83,7 @@ export interface AppState extends AppData {
   spendDew(amount: number): boolean;
   buySpecies(speciesId: string, cost: number): boolean;
   grantSpecies(speciesId: string): void;
+  buyOutfit(outfitId: string): void;
   buyDecoration(kind: DecorationKind, cost: number): boolean;
   placeDecoration(kind: DecorationKind, tile: TilePosition): Decoration | null;
   moveDecoration(id: string, tile: TilePosition): void;
@@ -175,6 +176,14 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const w = get().wallet;
     if (w.ownedSpeciesIds.includes(speciesId)) return;
     const wallet = { ...w, ownedSpeciesIds: [...w.ownedSpeciesIds, speciesId] };
+    set({ wallet });
+    persist(persistence.putWallet(wallet));
+  },
+
+  buyOutfit(outfitId) {
+    const w = get().wallet;
+    if (w.ownedOutfitIds.includes(outfitId)) return;
+    const wallet = { ...w, ownedOutfitIds: [...w.ownedOutfitIds, outfitId] };
     set({ wallet });
     persist(persistence.putWallet(wallet));
   },
