@@ -67,3 +67,19 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   back, streak, level-up and break.
 - **A dev-only `/gallery` route** (only in development and e2e builds) shows every species at every
   stage and every companion mood for quick visual checks.
+
+## Phase 4: persistence
+
+- **Five object stores, one version counter.** `sessions`, `plants`, `tags`, `decorations` and a
+  `kv` store for the singletons (wallet, settings, achievements, streak). `DB_VERSION` and the
+  `MIGRATIONS` array in `src/storage/db.ts` must stay in step; a guard throws at import time if not.
+- **Settings merge with defaults on load**, so a setting added in a later release gets its default
+  without a database migration.
+- **Default tags are seeded only into a brand-new database.** Deleting all tags later sticks.
+- **Export files carry `schemaVersion`** and `EXPORT_MIGRATIONS` upgrade older files on import.
+  Files from a newer schema are refused with a clear message rather than imported partially.
+- **Import validates every record** and reports problems by index (first 10). Starter species are
+  always re-added to the owned list so the app can never end up with nothing to plant.
+- **Import and reset are disabled while a session runs**, so the live engine never references data
+  that just disappeared.
+- **The app waits for hydration before rendering routes**, avoiding a flash of default settings.

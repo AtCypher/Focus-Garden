@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  define: { __APP_VERSION__: '"test"' },
   test: {
     environment: 'jsdom',
     globals: true,
