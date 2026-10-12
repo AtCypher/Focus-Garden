@@ -33,6 +33,7 @@
   --color-dew-400: #6cc4e2;
   --color-dew-500: #3ea6cd;
   --color-dew-600: #2d85a7;
+  --color-dew-700: #1f6482;
 
   --color-bloom-400: #f0a3c0;
   --color-bloom-500: #e4779f;
@@ -40,6 +41,7 @@
 
   --color-sun-400: #f3c969;
   --color-sun-500: #e9b23c;
+  --color-sun-700: #8a5f0c;
 
   --radius-xl2: 1.25rem;
 }
@@ -108,4 +110,181 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Companion animations. Disabled globally under prefers-reduced-motion (see above). */
+@keyframes cmp-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes cmp-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03, 0.97);
+  }
+}
+@keyframes cmp-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-10px) scale(1.04, 0.96);
+  }
+  60% {
+    transform: translateY(0) scale(0.98, 1.02);
+  }
+}
+@keyframes cmp-pour {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-28deg);
+  }
+}
+@keyframes cmp-drop {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-6px, 22px);
+    opacity: 0;
+  }
+}
+@keyframes cmp-float {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+@keyframes cmp-droop {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-20deg);
+  }
+}
+@keyframes cmp-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+.cmp-bob {
+  animation: cmp-bob 2.6s ease-in-out infinite;
+}
+.cmp-breathe {
+  animation: cmp-breathe 3.5s ease-in-out infinite;
+}
+.cmp-bounce {
+  animation: cmp-bounce 1.1s ease-in-out infinite;
+}
+.cmp-pour {
+  animation: cmp-pour 2.4s ease-in-out infinite;
+}
+.cmp-drop {
+  animation: cmp-drop 1.2s linear infinite;
+}
+.cmp-float {
+  animation: cmp-float 2s ease-out infinite;
+}
+.cmp-droop {
+  animation: cmp-droop 1s ease-in-out 1 forwards;
+}
+.cmp-twinkle {
+  animation: cmp-twinkle 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cmp-delay-1 {
+  animation-delay: 0.4s;
+}
+.cmp-delay-2 {
+  animation-delay: 0.8s;
+}
+
+/* Plant sway while a session runs. */
+@keyframes plant-sway {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+.plant-sway {
+  animation: plant-sway 5s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+
+/* Garden ambient animation. */
+@keyframes gd-flutter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -6px);
+  }
+  50% {
+    transform: translate(14px, 2px);
+  }
+  75% {
+    transform: translate(6px, -4px);
+  }
+}
+@keyframes gd-glow {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes gd-drift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(60px);
+  }
+}
+.gd-flutter {
+  animation: gd-flutter 6s ease-in-out infinite;
+}
+.gd-glow {
+  animation: gd-glow 2.4s ease-in-out infinite;
+}
+.gd-drift {
+  animation: gd-drift 30s linear infinite alternate;
 }

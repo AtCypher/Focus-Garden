@@ -24,3 +24,133 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   `VITE_ALLOW_SPEED_FLAG=true`, which is set in `.env.development` and `.env.e2e`. Playwright builds
   with `--mode e2e`, so the production bundle never contains the shortcut.
 - **Fonts.** System font stack only, so the app makes no third-party requests at all.
+
+## Phase 2: timer engine
+
+- **One engine block = one plant.** The pure engine (`src/features/timer/engine.ts`) models a single
+  focus block. Pomodoro breaks are a separate, simpler timer (`pomodoro.ts`); each focus block
+  produces its own session and plant, as the brief asks.
+- **Completion beats wilting.** If the user leaves and the plant finishes growing before the grace
+  period ends, the session counts as completed. The plant was done; it should not die afterwards.
+- **Giving up inside the cancel window is a free cancel**, whatever the strictness.
+- **Giving up in Gentle mode still wilts the plant.** "Plants never die" in Gentle refers to leaving
+  the app; an explicit give-up is the user's choice and is recorded honestly.
+- **A pause longer than 5 minutes auto-resumes at the 5-minute mark**, so a forgotten pause in
+  Gentle mode cannot stall the timer forever and the credited time stays honest.
+- **Stopwatch cap of 180 minutes** (matches the countdown maximum); the session auto-completes there.
+- **Window blur counts as leaving** in addition to `visibilitychange`, as the brief suggests. On
+  desktop this means clicking into another window starts the grace period. The 15-second grace
+  absorbs accidental clicks.
+- **Reload survives a session.** A snapshot of the running block is kept in localStorage along with
+  the time the page was hidden; on reload the engine replays hide/show, so a refresh inside the
+  grace period keeps the plant and a long absence wilts it, exactly as if the tab had stayed open.
+- **Hold-to-confirm is pointer-only.** Keyboard and screen-reader users get a confirmation dialog
+  instead of a timed hold, which would otherwise be inaccessible.
+- **Timer announcements** go to an `aria-live` region once per minute, not every second.
+
+## Phase 3: plants and companion
+
+- **Parametric art instead of 120 hand-drawn files.** Each species picks one of six form renderers
+  (tree, flower, shrub, cactus, mushroom, fern) and supplies a palette plus a few shape parameters.
+  Seed and sprout stages are shared; sapling and full stages scale the form and fade in details
+  (blooms, fruit, extra fronds). Wilting desaturates the palette and droops the form. Mature and
+  ancient variants scale up; ancient adds a soft glow. All colours are SVG attributes, not CSS, so
+  the garden can be rasterised to PNG for sharing.
+- **Growth is continuous, stages cross-fade.** The timer screen interpolates growth every tick and
+  cross-fades when the stage changes. With `prefers-reduced-motion` the sway stops and stages swap
+  without animation.
+- **The companion is "Pip" by default**, a round seedling sprite with a watering can. Moods cycle
+  (watering, idle, humming, dozing) on a 25-second rhythm during a session; worried while away; sad
+  for 2.5 seconds after a wilt, then kind. Outfits are drawn in the same component for the shop.
+- **Messages are deterministic per session** (seeded from the start time) so re-renders do not
+  shuffle text. The bank has 40+ lines across start, mid, near-end, completion, wilt, cancel, away,
+  back, streak, level-up and break.
+- **A dev-only `/gallery` route** (only in development and e2e builds) shows every species at every
+  stage and every companion mood for quick visual checks.
+
+## Phase 4: persistence
+
+- **Five object stores, one version counter.** `sessions`, `plants`, `tags`, `decorations` and a
+  `kv` store for the singletons (wallet, settings, achievements, streak). `DB_VERSION` and the
+  `MIGRATIONS` array in `src/storage/db.ts` must stay in step; a guard throws at import time if not.
+- **Settings merge with defaults on load**, so a setting added in a later release gets its default
+  without a database migration.
+- **Default tags are seeded only into a brand-new database.** Deleting all tags later sticks.
+- **Export files carry `schemaVersion`** and `EXPORT_MIGRATIONS` upgrade older files on import.
+  Files from a newer schema are refused with a clear message rather than imported partially.
+- **Import validates every record** and reports problems by index (first 10). Starter species are
+  always re-added to the owned list so the app can never end up with nothing to plant.
+- **Import and reset are disabled while a session runs**, so the live engine never references data
+  that just disappeared.
+- **The app waits for hydration before rendering routes**, avoiding a flash of default settings.
+
+## Phase 5: garden
+
+- **Lifetime focus counts completed sessions only.** Wilted sessions are recorded honestly but do
+  not advance the garden level, so leaving early never "pays".
+- **Biomes are column strips** of one isometric grid, in catalogue order, so the garden reads as
+  neighbouring fields. When a new biome unlocks the strips are redistributed; a plant whose stored
+  tile is no longer inside its biome is re-seated at render time (never persisted), while plants
+  the user arranged keep their tile for as long as it stays valid.
+- **Full biomes overflow instead of growing without bound.** A garden with 300 hours of focus holds
+  far more plants than any tidy plot; the garden shows what fits (160 tiles at level 7) and reports
+  "+N more without room". Every plant is still in the history and period views.
+- **Period views reuse stored tiles.** "Today" shows today's plants where they live in the full
+  garden, so the view stays stable across periods.
+- **Restoration is quantised** to 0 / 25 / 50 / 100% by living plants per biome tile count, as the
+  brief asks, and drives both the ground colour and the legend.
+- **Scenery lives outside the plant grid.** Path, pond, hills, stream, snow caps, birds, stars and
+  fireflies are drawn around the plot so they never take tiles away from plants.
+- **Taps vs. drags.** The pan/zoom wrapper only captures pointers after 6px of movement, otherwise
+  pointer capture would retarget the click and plants could not be tapped.
+- **Arrange mode is tap-to-move** (select, "Move", tap a free tile) rather than drag-and-drop, so it
+  works with a keyboard and a screen reader and does not fight the pan gesture.
+- **Level-up detection happens in the finish handler**, comparing the level before and after the
+  session is recorded, and shows a before/after render of the same plants on both grids.
+
+## Phase 6: economy
+
+- **Two gates per species: biome and unlock.** A species can be planted only when its biome has
+  opened (garden level) and it is owned (starter, bought with dew, or earned by milestone). Milestone
+  species are granted automatically right after the session that earns them, with a toast.
+- **Shop prices.** Species 40–450 dew by rarity and biome; decorations 40–260; outfits 100–150. With
+  1 dew per minute plus bonuses, a first purchase lands after one or two sessions and the
+  legendary tier takes weeks. No timers, no bundles, no real money.
+- **Decorations are counted, not instanced, in the wallet.** Buying increments a count per kind;
+  placing creates an instance in the garden; "Put away" removes the instance and returns it to the
+  inventory. Several of the same kind can be owned and placed.
+- **Outfits equip instantly on purchase.** Switching back is free in the Seed Book.
+- **Locked species show a desaturated silhouette** of the real art rather than a generic shape, so
+  the collection screen still hints at what the plant will look like.
+
+## Phase 7: stats, streaks, achievements
+
+- **A streak day is a day that meets the daily goal**, not merely any session. The goal is the
+  user's own number (default 60 minutes) and can be lowered in Settings. This makes the streak mean
+  something and keeps "one quick 10-minute session to keep the streak" honest.
+- **Days are finalised the morning after.** Today never breaks a streak while it is still running;
+  it only adds to the display once the goal is met. Finalisation is incremental (`lastEvaluated`),
+  so re-evaluating is idempotent and a long absence is processed in one pass.
+- **Freezes: one per 7 consecutive goal days, at most 3 banked, spent automatically** on the first
+  missed day. Frozen days are recorded so they are never re-judged.
+- **Achievements are re-evaluated after every session and once at boot** from the full data, so
+  imported histories unlock the right ones immediately. Unlock timestamps are kept once set.
+- **By-hour chart splits sessions across hour boundaries**, crediting each hour with the minutes
+  that actually fell in it.
+- **Stats page is code-split** so Recharts loads only when the page is opened.
+
+## Phase 8: polish
+
+- **All sound is synthesised** with the Web Audio API (filtered noise, oscillators, scheduled
+  chirps and clinks). No audio files ship, so `CREDITS.md` has nothing to license and the app
+  stays small. The audio context is created on the "Plant" tap, which satisfies autoplay rules.
+- **Share image is a canvas rasterisation of the live garden SVG** plus a caption. On devices with
+  the Web Share API and file sharing, the OS share sheet opens; otherwise a PNG downloads.
+- **Onboarding is three screens** and is skippable. "Reset everything" keeps the onboarding flag
+  so a reset does not replay it.
+- **Accessibility is tested, not assumed.** Playwright runs axe-core (WCAG 2.0 A/AA) on every main
+  page and fails on serious or critical violations. Two contrast issues found that way (rarity
+  labels, chart tooltips) were fixed.
+- **Lighthouse 12 no longer has a PWA category**; installability is covered by the manifest,
+  icons and service worker, and offline loading is verified by an E2E test instead. Scores on the
+  production build: performance 97, accessibility 100, best practices 100, SEO 100.
