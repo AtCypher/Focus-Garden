@@ -8,14 +8,26 @@ paywalled features. Everything stays on your device unless you export it yoursel
 
 ## What it does
 
-- **Focus sessions** as a countdown (10 to 180 minutes), Pomodoro rounds, or a stopwatch.
+- **Focus sessions** as a countdown (10 to 180 minutes), Pomodoro rounds with breaks, or a stopwatch.
+  The first 10 seconds of any session can be cancelled for free.
 - **Strictness you choose**: Gentle (pauses allowed, plants never die), Standard (15-second grace
-  when you leave), Deep focus (5-second grace, hold-to-confirm give up).
-- **Plants and biomes**: original SVG species with growth stages; long sessions grow mature and
-  ancient variants.
-- **A garden that evolves** with your lifetime focus time, from a bare patch to a sanctuary.
-- **Dew**, the in-app currency, earned by focusing and spent on species and decorations.
-- **Stats**, tags, streaks with streak freezes, achievements, and a session timeline.
+  when you leave), Deep focus (5-second grace, hold-to-confirm give up). A one-tap "I need other
+  apps or tabs" switch turns a session Gentle so studying on your device is never punished.
+- **24 original plant species** across seven biomes, each drawn as parametric SVG with seed, sprout,
+  sapling and full stages plus a wilted state. Sessions of 60 minutes or more grow mature variants;
+  120 minutes or more grow ancient ones with a soft glow.
+- **A companion**, Pip (rename it), who waters, hums and dozes beside your plant, and is kind rather
+  than scolding when something wilts.
+- **A garden that evolves** with lifetime focus time through seven levels, from a bare patch to a
+  night-time sanctuary with fireflies. Biomes start grey and regain colour as they fill. Isometric
+  view with pan and pinch-zoom, Today/Week/Month/Year/All views, plant details with notes, an
+  arrange mode, day/night and seasonal tints, and a shareable PNG.
+- **Dew**, the in-app currency: 1 per focused minute with bonuses for stricter modes and the first
+  session of the day. Spend it on species, decorations and companion outfits in the Seed Book.
+- **Stats**: dashboard, charts by day, tag and hour, a daily goal, streaks with earned streak
+  freezes, 20 achievements and a session timeline. Tags are yours to define.
+- **Sounds**: rain, forest, café, stream and brown noise, synthesised on the device, plus a chime.
+- **Light and dark themes**, reduced-motion support, keyboard access, screen-reader labels.
 - **Export and import** your data as JSON to move between devices.
 
 ## Run it locally
@@ -28,11 +40,12 @@ npm run dev        # http://localhost:5173
 npm test           # unit and component tests (Vitest)
 npm run lint       # ESLint + Prettier check
 npm run build      # type-check and production build into dist/
-npm run e2e        # Playwright end-to-end tests (builds in "e2e" mode first)
+npm run e2e        # Playwright end-to-end and accessibility tests (builds in "e2e" mode first)
 ```
 
-In development you can append `?speed=fast` to the URL to make one minute pass in one second. This
-flag is ignored in production builds.
+In development you can append `?speed=fast` to the URL to make one minute pass in one second
+(`?speed=normal` turns it off). The flag is ignored in production builds. A dev-only `/gallery`
+route shows every species at every stage and every companion mood.
 
 ## Deploy
 
@@ -47,9 +60,19 @@ user or custom-domain site).
 ## Add a new species
 
 Species are data. Add an entry to `src/data/species.ts` with an id, name, biome, rarity, unlock
-condition, dew cost, flavour text, palette and the art form to draw it with. Nothing else needs to
-change: the shop, Seed Book, garden and stats pick it up automatically. See the comments at the top
-of that file for the fields and the available art forms.
+condition, dew cost, flavour text, palette and the art form to draw it with (`tree`, `flower`,
+`shrub`, `cactus`, `mushroom` or `fern`, each with a few shape parameters documented at the top of
+that file). Nothing else needs to change: the shop, Seed Book, garden, planting list and stats pick
+it up automatically. Open `/gallery` in development to check how it looks at every stage.
+
+To add a new art form, write a renderer in `src/art/plants/` that takes `FormProps` and register
+it in `src/art/PlantArt.tsx`.
+
+## Tune the garden
+
+Level thresholds, grid sizes and scenery live in `src/data/gardenLevels.ts`; biome unlock levels in
+`src/data/biomes.ts`; dew rates, grace periods and other rules in `src/features/timer/rules.ts`;
+decorations and outfits in `src/data/`.
 
 ## Web-platform limits, stated honestly
 
@@ -57,7 +80,7 @@ of that file for the fields and the available art forms.
   notices when you leave (the Page Visibility API and window blur) and, in Standard and Deep focus
   modes, gives you a short grace period to come back before the plant wilts.
 - **Timers use wall-clock timestamps**, not tick counting, so they stay correct when the tab is
-  throttled or the phone sleeps.
+  throttled or the phone sleeps. A running session also survives a page reload.
 - **Notifications** need your permission and, on iOS, the app must be installed to the home screen.
 - **Screen wake lock** is optional and only works in browsers that support the Wake Lock API.
 
@@ -65,21 +88,22 @@ of that file for the fields and the available art forms.
 
 ```
 src/
-  app/            routing, layout, providers
+  app/            routing, layout, stores, shared UI, onboarding
   features/
-    timer/        session engine, strictness, visibility handling
-    garden/       garden renderer, placement, arrange mode, share image
-    collection/   seed book, shop
-    stats/        dashboard, charts, timeline
-    companion/    character, messages
-    settings/     settings, tags, export/import
-  data/           species, gardenLevels, achievements, decorations
-  art/            SVG components for plants, companion, decorations, terrain
-  storage/        IndexedDB access, migrations
+    timer/        session engine, rules, store, visibility controller, audio, timer screens
+    garden/       levels and layout logic, SVG scene, pan/zoom, periods, share image
+    collection/   unlock logic, Seed Book and shops
+    stats/        aggregation, streaks, achievements, stats page
+    companion/    message bank, companion panel
+    settings/     settings page, tags, export/import
+  data/           species, biomes, gardenLevels, achievements, decorations, outfits, defaults
+  art/            SVG renderers for plants, companion, decorations, scenery
+  storage/        IndexedDB schema and migrations, repository, export/import
   types.ts
 public/           icons, manifest assets
 docs/             decisions.md, v2-social.md
+e2e/              Playwright flows and axe accessibility scans
 ```
 
-See `docs/decisions.md` for the reasoning behind non-obvious choices and `CREDITS.md` for
-third-party licences.
+See `docs/decisions.md` for the reasoning behind non-obvious choices, `docs/v2-social.md` for the
+planned "Focus together" feature, and `CREDITS.md` for third-party licences.
