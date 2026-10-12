@@ -24,3 +24,26 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   `VITE_ALLOW_SPEED_FLAG=true`, which is set in `.env.development` and `.env.e2e`. Playwright builds
   with `--mode e2e`, so the production bundle never contains the shortcut.
 - **Fonts.** System font stack only, so the app makes no third-party requests at all.
+
+## Phase 2: timer engine
+
+- **One engine block = one plant.** The pure engine (`src/features/timer/engine.ts`) models a single
+  focus block. Pomodoro breaks are a separate, simpler timer (`pomodoro.ts`); each focus block
+  produces its own session and plant, as the brief asks.
+- **Completion beats wilting.** If the user leaves and the plant finishes growing before the grace
+  period ends, the session counts as completed. The plant was done; it should not die afterwards.
+- **Giving up inside the cancel window is a free cancel**, whatever the strictness.
+- **Giving up in Gentle mode still wilts the plant.** "Plants never die" in Gentle refers to leaving
+  the app; an explicit give-up is the user's choice and is recorded honestly.
+- **A pause longer than 5 minutes auto-resumes at the 5-minute mark**, so a forgotten pause in
+  Gentle mode cannot stall the timer forever and the credited time stays honest.
+- **Stopwatch cap of 180 minutes** (matches the countdown maximum); the session auto-completes there.
+- **Window blur counts as leaving** in addition to `visibilitychange`, as the brief suggests. On
+  desktop this means clicking into another window starts the grace period. The 15-second grace
+  absorbs accidental clicks.
+- **Reload survives a session.** A snapshot of the running block is kept in localStorage along with
+  the time the page was hidden; on reload the engine replays hide/show, so a refresh inside the
+  grace period keeps the plant and a long absence wilts it, exactly as if the tab had stayed open.
+- **Hold-to-confirm is pointer-only.** Keyboard and screen-reader users get a confirmation dialog
+  instead of a timed hold, which would otherwise be inaccessible.
+- **Timer announcements** go to an `aria-live` region once per minute, not every second.

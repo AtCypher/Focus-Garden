@@ -7,7 +7,17 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist', 'coverage', 'playwright-report', 'test-results', 'public'] },
+  {
+    ignores: [
+      'dist',
+      'dev-dist',
+      'coverage',
+      'playwright-report',
+      'test-results',
+      'public',
+      '.scratch',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -30,6 +40,7 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
+      'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
     },
   },
   prettier,

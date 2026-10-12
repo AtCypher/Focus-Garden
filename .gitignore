@@ -7,3 +7,4 @@ test-results
 .vite
 *.local
 .DS_Store
+.scratch

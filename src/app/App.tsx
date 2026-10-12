@@ -1,10 +1,33 @@
+import { useEffect } from 'react';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
+import { useTheme } from './useTheme';
+import { startSessionController } from '@/features/timer/sessionController';
+import { onSessionFinished } from '@/features/timer/timerStore';
+import { buildRecords } from '@/features/timer/recordSession';
+import { useAppStore } from './store/appStore';
+
+function useBoot() {
+  useTheme();
+  useEffect(() => {
+    const stopController = startSessionController();
+    const offFinish = onSessionFinished((state) => {
+      const app = useAppStore.getState();
+      const { session, plant } = buildRecords({
+        state,
+        existingSessions: app.sessions,
+        chooseTile: () => null,
+      });
+      app.recordSession(session, plant);
+    });
+    return () => {
+      offFinish();
+      stopController();
+    };
+  }, []);
+}
+
 export function App() {
-  return (
-    <main className="mx-auto flex min-h-full max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="font-display text-4xl font-semibold text-moss-700 dark:text-moss-300">
-        Grove
-      </h1>
-      <p className="text-muted">A focus timer that grows a garden.</p>
-    </main>
-  );
+  useBoot();
+  return <RouterProvider router={router} />;
 }
