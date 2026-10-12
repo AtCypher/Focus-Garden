@@ -138,3 +138,19 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **By-hour chart splits sessions across hour boundaries**, crediting each hour with the minutes
   that actually fell in it.
 - **Stats page is code-split** so Recharts loads only when the page is opened.
+
+## Phase 8: polish
+
+- **All sound is synthesised** with the Web Audio API (filtered noise, oscillators, scheduled
+  chirps and clinks). No audio files ship, so `CREDITS.md` has nothing to license and the app
+  stays small. The audio context is created on the "Plant" tap, which satisfies autoplay rules.
+- **Share image is a canvas rasterisation of the live garden SVG** plus a caption. On devices with
+  the Web Share API and file sharing, the OS share sheet opens; otherwise a PNG downloads.
+- **Onboarding is three screens** and is skippable. "Reset everything" keeps the onboarding flag
+  so a reset does not replay it.
+- **Accessibility is tested, not assumed.** Playwright runs axe-core (WCAG 2.0 A/AA) on every main
+  page and fails on serious or critical violations. Two contrast issues found that way (rarity
+  labels, chart tooltips) were fixed.
+- **Lighthouse 12 no longer has a PWA category**; installability is covered by the manifest,
+  icons and service worker, and offline loading is verified by an E2E test instead. Scores on the
+  production build: performance 97, accessibility 100, best practices 100, SEO 100.

@@ -100,8 +100,8 @@ function SpeciesTab() {
 const RARITY_CLASS: Record<Species['rarity'], string> = {
   common: 'text-muted',
   uncommon: 'text-moss-600 dark:text-moss-300',
-  rare: 'text-dew-600 dark:text-dew-300',
-  legendary: 'text-sun-500',
+  rare: 'text-dew-700 dark:text-dew-300',
+  legendary: 'text-sun-700 dark:text-sun-400',
 };
 
 function SpeciesCard({

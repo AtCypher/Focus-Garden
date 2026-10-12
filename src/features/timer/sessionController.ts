@@ -8,6 +8,7 @@ import { useAppStore } from '@/app/store/appStore';
 import { closeNotifications, notify, vibrate, WakeLock } from './platform';
 import { RULES } from './rules';
 import { getSpecies } from '@/data/species';
+import { ambient } from './audio';
 
 const GRACE_TAG = 'grove-grace';
 const DONE_TAG = 'grove-done';
@@ -97,11 +98,18 @@ export function startSessionController(): () => void {
       } else {
         void wakeLock.release();
       }
+      if (status === 'running') {
+        const { ambientSound, ambientVolume } = settings();
+        if (ambientSound !== 'none') ambient.play(ambientSound, ambientVolume);
+      } else if (status === 'paused' || status === 'idle' || status === 'break') {
+        ambient.stop();
+      }
     }
     if (state.result && state.result !== prev.result) {
       const r = state.result;
       void closeNotifications(GRACE_TAG);
       if (settings().haptics) vibrate(r.outcome === 'completed' ? [60, 40, 60] : [200]);
+      if (settings().chime && r.outcome === 'completed') ambient.chime();
       if (document.visibilityState === 'hidden' && settings().notifications) {
         const species = getSpecies(r.config.speciesId).name.toLowerCase();
         if (r.outcome === 'completed') {
@@ -119,6 +127,16 @@ export function startSessionController(): () => void {
     }
   });
 
+  const unsubSettings = useAppStore.subscribe((state, prev) => {
+    const a = state.settings;
+    const b = prev.settings;
+    if (a.ambientSound === b.ambientSound && a.ambientVolume === b.ambientVolume) return;
+    if (timer.getState().engine?.status === 'running') {
+      if (a.ambientSound === 'none') ambient.stop();
+      else ambient.play(a.ambientSound, a.ambientVolume);
+    }
+  });
+
   timer.getState().restore(Date.now());
   ensureLoop();
 
@@ -128,6 +146,8 @@ export function startSessionController(): () => void {
     window.removeEventListener('focus', onFocus);
     window.removeEventListener('pagehide', onPageHide);
     unsub();
+    unsubSettings();
+    ambient.stop();
     if (interval) clearInterval(interval);
     if (graceTimeout) clearTimeout(graceTimeout);
     void wakeLock.release();

@@ -18,6 +18,7 @@ import { getSpecies } from '@/data/species';
 import { formatDuration } from '@/lib/dates';
 import { STRICTNESS_LABELS } from './rules';
 import { IconPause, IconPlay } from '@/app/ui/icons';
+import { SoundPicker } from './SoundPicker';
 
 interface Props {
   engine: EngineState;
@@ -69,6 +70,7 @@ export function SessionView({ engine }: Props) {
         <p className="text-muted mt-0.5 text-xs" aria-live="polite">
           {statusLine}
         </p>
+        <SoundPicker className="mt-2" />
       </header>
 
       <div className="flex flex-col items-center">

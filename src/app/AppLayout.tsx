@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { IconBook, IconChart, IconGarden, IconSettings, IconTimer } from './ui/icons';
 import { LevelUpDialog } from '@/features/garden/LevelUpDialog';
 import { Toast } from './ui/Toast';
+import { Onboarding } from './Onboarding';
 
 const links = [
   { to: '/', label: 'Timer', Icon: IconTimer, end: true },
@@ -63,6 +64,7 @@ export function AppLayout() {
       </main>
       <LevelUpDialog />
       <Toast />
+      <Onboarding />
     </div>
   );
 }

@@ -195,6 +195,7 @@ export function GardenScene({
   return (
     <svg
       id={id}
+      xmlns="http://www.w3.org/2000/svg"
       viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
       preserveAspectRatio="xMidYMid meet"
       className={className}

@@ -27,6 +27,13 @@ import { PlantArt } from '@/art/PlantArt';
 import { IconCheck } from '@/app/ui/icons';
 
 const UNTAGGED = '#9aa39c';
+const TOOLTIP_STYLE = {
+  background: 'var(--card)',
+  border: '1px solid var(--card-border)',
+  borderRadius: 12,
+  color: 'var(--fg)',
+};
+const TOOLTIP_ITEM = { color: 'var(--fg)' };
 
 export function StatsPage() {
   const sessions = useAppStore((s) => s.sessions);
@@ -134,7 +141,11 @@ export function StatsPage() {
             >
               <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={1} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v) => [`${v} min`, 'Focus']} />
+              <Tooltip
+                formatter={(v) => [`${v} min`, 'Focus']}
+                contentStyle={TOOLTIP_STYLE}
+                itemStyle={TOOLTIP_ITEM}
+              />
               <Bar dataKey="minutes" fill="var(--color-moss-500)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -163,7 +174,11 @@ export function StatsPage() {
                         <Cell key={String(d.id)} fill={d.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v) => [`${v} min`]} />
+                    <Tooltip
+                      formatter={(v) => [`${v} min`]}
+                      contentStyle={TOOLTIP_STYLE}
+                      itemStyle={TOOLTIP_ITEM}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

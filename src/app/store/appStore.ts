@@ -287,8 +287,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
   },
 
   resetAll() {
-    set({ ...emptyData(), hydrated: true });
-    persist(persistence.clearAll());
+    // A reset is a fresh start for data; the user has clearly seen the onboarding already.
+    const fresh = emptyData();
+    fresh.settings.onboardingDone = get().settings.onboardingDone;
+    set({ ...fresh, hydrated: true });
+    persist(persistence.clearAll().then(() => persistence.putSettings(fresh.settings)));
   },
 }));
 

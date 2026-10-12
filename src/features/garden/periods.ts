@@ -8,7 +8,7 @@ export const PERIODS: { id: Period; label: string }[] = [
   { id: 'week', label: 'Week' },
   { id: 'month', label: 'Month' },
   { id: 'year', label: 'Year' },
-  { id: 'all', label: 'All time' },
+  { id: 'all', label: 'All' },
 ];
 
 /** Start of the period containing `now`, as a local day key. Null means no lower bound. */

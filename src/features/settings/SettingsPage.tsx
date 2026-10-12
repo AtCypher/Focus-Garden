@@ -9,7 +9,8 @@ import {
   requestNotificationPermission,
   WakeLock,
 } from '@/features/timer/platform';
-import type { ThemePreference } from '@/types';
+import type { AmbientSound, ThemePreference } from '@/types';
+import { AMBIENT_OPTIONS, AmbientPlayer } from '@/features/timer/audio';
 
 export function SettingsPage() {
   const settings = useAppStore((s) => s.settings);
@@ -186,6 +187,41 @@ export function SettingsPage() {
             checked={settings.haptics}
             onChange={(v) => update({ haptics: v })}
             label="Vibration"
+          />
+        </Row>
+        <Row
+          label="Ambient sound"
+          hint={
+            AmbientPlayer.supported()
+              ? 'Generated on the device; nothing is downloaded.'
+              : 'Not supported in this browser.'
+          }
+          htmlFor="ambient"
+        >
+          <select
+            id="ambient"
+            className={inputClass}
+            value={settings.ambientSound}
+            onChange={(e) => update({ ambientSound: e.target.value as AmbientSound })}
+            disabled={!AmbientPlayer.supported()}
+          >
+            {AMBIENT_OPTIONS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row label="Ambient volume" htmlFor="volume">
+          <input
+            id="volume"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={settings.ambientVolume}
+            onChange={(e) => update({ ambientVolume: Number(e.target.value) })}
+            className="w-full accent-moss-700 dark:accent-moss-400"
           />
         </Row>
         <Row label="Completion chime" htmlFor="chime">

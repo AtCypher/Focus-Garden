@@ -15,6 +15,9 @@ import { useGarden } from './useGarden';
 import { PERIODS, type Period } from './periods';
 import { season as seasonOf, timeOfDay, TIME_TINTS } from './daylight';
 import { biomeRegions } from './layout';
+import { renderGardenPng, shareOrDownload } from './shareImage';
+import { useUiStore } from '@/app/store/uiStore';
+import { formatHours as fmtHours } from '@/lib/dates';
 
 export function GardenPage() {
   const [period, setPeriod] = useState<Period>('all');
@@ -30,6 +33,8 @@ export function GardenPage() {
   const wallet = useAppStore((s) => s.wallet);
   const decorations = useAppStore((s) => s.decorations);
   const [placing, setPlacing] = useState<DecorationKind | null>(null);
+  const showToast = useUiStore((s) => s.showToast);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -53,6 +58,32 @@ export function GardenPage() {
         (wallet.ownedDecorations[kind] ?? 0) - decorations.filter((d) => d.kind === kind).length,
     }))
     .filter((x) => x.free > 0);
+
+  const share = async () => {
+    const svg = document.getElementById('garden-scene') as SVGSVGElement | null;
+    if (!svg) return;
+    setSharing(true);
+    try {
+      const dark = document.documentElement.classList.contains('dark');
+      const blob = await renderGardenPng({
+        svg,
+        caption: `${fmtHours(totalMinutes)} of focus, ${layout.placed.length} plants`,
+        subcaption: `${level.name}, level ${level.level} of 7${period !== 'all' ? ` · ${PERIODS.find((p) => p.id === period)?.label}` : ''}`,
+        dark,
+      });
+      const result = await shareOrDownload(
+        blob,
+        `grove-garden-${new Date().toISOString().slice(0, 10)}.png`,
+        'My Grove garden',
+      );
+      showToast(result === 'shared' ? 'Shared.' : 'Image downloaded.');
+    } catch (err) {
+      console.error(err);
+      showToast('Could not create the image.');
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const onTile = (tile: TilePosition) => {
     if (placing) {
@@ -115,6 +146,7 @@ export function GardenPage() {
         style={{ background: TIME_TINTS[time].skyBottom }}
       >
         <GardenScene
+          id="garden-scene"
           level={level}
           layout={layout}
           restoration={restoration}
@@ -146,18 +178,28 @@ export function GardenPage() {
             </>
           )}
         </p>
-        <Button
-          size="sm"
-          variant={arranging ? 'primary' : 'secondary'}
-          aria-pressed={arranging}
-          onClick={() => {
-            setArranging((a) => !a);
-            setMoving(null);
-            setPlacing(null);
-          }}
-        >
-          {arranging ? 'Done arranging' : 'Arrange'}
-        </Button>
+        <span className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void share()}
+            disabled={sharing || layout.placed.length === 0}
+          >
+            {sharing ? 'Rendering…' : 'Share image'}
+          </Button>
+          <Button
+            size="sm"
+            variant={arranging ? 'primary' : 'secondary'}
+            aria-pressed={arranging}
+            onClick={() => {
+              setArranging((a) => !a);
+              setMoving(null);
+              setPlacing(null);
+            }}
+          >
+            {arranging ? 'Done arranging' : 'Arrange'}
+          </Button>
+        </span>
       </div>
       {arranging && (
         <div className="card flex flex-col gap-2 p-3">
