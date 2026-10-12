@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import type { EngineState } from './engine';
-import { actualMinutes, calculateDew } from './engine';
+import { actualMinutes, calculateDew, variantForMinutes } from './engine';
 import { Button } from '@/app/ui/Button';
 import { PlantArt } from '@/art/PlantArt';
 import { getSpecies } from '@/data/species';
 import { IconDew } from '@/app/ui/icons';
+import { ResultCompanion } from '@/features/companion/CompanionPanel';
 
 interface Props {
   result: EngineState;
@@ -41,9 +42,9 @@ export function ResultView({ result, dewEarned, onDone, onRetryShorter }: Props)
       <PlantArt
         species={species}
         growth={outcome === 'completed' ? 1 : 0.5}
-        stage={outcome === 'completed' ? 'full' : 'sapling'}
         wilted={outcome === 'wilted'}
-        size={220}
+        variant={outcome === 'completed' ? variantForMinutes(minutes) : 'standard'}
+        size={200}
       />
       <div>
         <h1 className="font-display text-3xl font-semibold">{title}</h1>
@@ -57,6 +58,11 @@ export function ResultView({ result, dewEarned, onDone, onRetryShorter }: Props)
           <IconDew width={18} height={18} /> +{dew} dew
         </p>
       )}
+      <ResultCompanion
+        outcome={outcome ?? 'cancelled'}
+        minutes={minutes}
+        plant={species.name.toLowerCase()}
+      />
       <div className="flex w-full flex-col gap-2">
         {outcome === 'wilted' && (
           <Button size="lg" onClick={() => onRetryShorter(shorter)}>

@@ -12,7 +12,8 @@ import {
 import { useTimerStore } from './timerStore';
 import { Button } from '@/app/ui/Button';
 import { HoldButton } from './HoldButton';
-import { PlantArt } from '@/art/PlantArt';
+import { GrowingPlant } from './GrowingPlant';
+import { CompanionPanel } from '@/features/companion/CompanionPanel';
 import { getSpecies } from '@/data/species';
 import { formatDuration } from '@/lib/dates';
 import { STRICTNESS_LABELS } from './rules';
@@ -71,13 +72,7 @@ export function SessionView({ engine }: Props) {
       </header>
 
       <div className="flex flex-col items-center">
-        <PlantArt
-          species={species}
-          growth={p}
-          stage={stage}
-          size={260}
-          className="drop-shadow-sm"
-        />
+        <GrowingPlant species={species} growth={p} stage={stage} size={240} />
         <output
           className={`font-display mt-2 text-6xl font-semibold tabular-nums ${engine.status === 'paused' ? 'opacity-60' : ''}`}
           aria-hidden
@@ -99,6 +94,8 @@ export function SessionView({ engine }: Props) {
           </div>
         )}
       </div>
+
+      <CompanionPanel engine={engine} now={now} />
 
       <div className="flex w-full flex-col items-center gap-3">
         {inCancel ? (

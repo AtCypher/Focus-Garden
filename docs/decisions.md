@@ -47,3 +47,23 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **Hold-to-confirm is pointer-only.** Keyboard and screen-reader users get a confirmation dialog
   instead of a timed hold, which would otherwise be inaccessible.
 - **Timer announcements** go to an `aria-live` region once per minute, not every second.
+
+## Phase 3: plants and companion
+
+- **Parametric art instead of 120 hand-drawn files.** Each species picks one of six form renderers
+  (tree, flower, shrub, cactus, mushroom, fern) and supplies a palette plus a few shape parameters.
+  Seed and sprout stages are shared; sapling and full stages scale the form and fade in details
+  (blooms, fruit, extra fronds). Wilting desaturates the palette and droops the form. Mature and
+  ancient variants scale up; ancient adds a soft glow. All colours are SVG attributes, not CSS, so
+  the garden can be rasterised to PNG for sharing.
+- **Growth is continuous, stages cross-fade.** The timer screen interpolates growth every tick and
+  cross-fades when the stage changes. With `prefers-reduced-motion` the sway stops and stages swap
+  without animation.
+- **The companion is "Pip" by default**, a round seedling sprite with a watering can. Moods cycle
+  (watering, idle, humming, dozing) on a 25-second rhythm during a session; worried while away; sad
+  for 2.5 seconds after a wilt, then kind. Outfits are drawn in the same component for the shop.
+- **Messages are deterministic per session** (seeded from the start time) so re-renders do not
+  shuffle text. The bank has 40+ lines across start, mid, near-end, completion, wilt, cancel, away,
+  back, streak, level-up and break.
+- **A dev-only `/gallery` route** (only in development and e2e builds) shows every species at every
+  stage and every companion mood for quick visual checks.
