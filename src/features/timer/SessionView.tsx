@@ -58,7 +58,11 @@ export function SessionView({ engine }: Props) {
       return `Paused. ${pausesLeft(engine)} pause${pausesLeft(engine) === 1 ? '' : 's'} left after this.`;
     if (engine.status === 'away') return 'Come back! Your plant is waiting.';
     if (inCancel) return `Cancel for free for ${cancelLeft}s`;
-    const label = STRICTNESS_LABELS[engine.config.strictness].name;
+    const label =
+      STRICTNESS_LABELS[engine.config.strictness].name +
+      (engine.config.allowLeaving && engine.config.strictness !== 'gentle'
+        ? ' · leaving allowed'
+        : '');
     if (engine.config.mode === 'pomodoro') return `Round ${engine.config.round} · ${label}`;
     return label;
   })();

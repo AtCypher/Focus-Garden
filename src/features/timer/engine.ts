@@ -20,6 +20,12 @@ export interface EngineConfig {
   /** Minutes to focus. Ignored for stopwatch (use 0). */
   plannedMinutes: number;
   strictness: Strictness;
+  /**
+   * Leaving (switching apps, locking the phone) only counts as a leave and never wilts the plant.
+   * Pausing and the dew multiplier still follow the strictness. The web cannot tell a screen lock
+   * from an app switch, so this covers both.
+   */
+  allowLeaving?: boolean;
   speciesId: string;
   tagId: string | null;
   /** Pomodoro round number (1-based) or null. */
@@ -142,6 +148,11 @@ export function isInCancelWindow(state: EngineState, now: number): boolean {
   return state.status !== 'finished' && now - state.startedAt < RULES.cancelWindowMs;
 }
 
+/** Does leaving start a grace period (and risk a wilt) for this block? */
+export function leavingWilts(config: EngineConfig): boolean {
+  return config.strictness !== 'gentle' && !config.allowLeaving;
+}
+
 export function canPause(state: EngineState): boolean {
   return (
     state.status === 'running' &&
@@ -254,7 +265,7 @@ export function reduce(state: EngineState, event: EngineEvent, now: number): Eng
 
     case 'hide': {
       if (state.status !== 'running') return state;
-      if (state.config.strictness === 'gentle') {
+      if (state.config.strictness === 'gentle' || state.config.allowLeaving) {
         // Leaving is allowed. Count it for the reminder, keep growing.
         return { ...state, leaveCount: state.leaveCount + 1 };
       }
@@ -269,6 +280,9 @@ export function reduce(state: EngineState, event: EngineEvent, now: number): Eng
     }
 
     case 'show': {
+      if (state.status === 'running' && reachedEnd(state, now)) {
+        return finish(state, 'completed', now, state.endsAt ?? now);
+      }
       if (state.status !== 'away') return state;
       const next = resolveAway(state, now);
       if (next.status === 'running' && reachedEnd(next, now)) {

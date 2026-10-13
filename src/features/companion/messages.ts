@@ -55,7 +55,7 @@ export const MESSAGES: Record<MessageKind, string[]> = {
   back: ['There you are. Carry on.', 'Welcome back. Nothing wilted.'],
   gentleLeave: [
     'Take what you need. I will keep watering.',
-    'Gentle mode: the {plant} is safe while you are away.',
+    'The {plant} is safe while you are away. It keeps growing.',
   ],
   streak: [
     '{days} days in a row. The garden notices.',

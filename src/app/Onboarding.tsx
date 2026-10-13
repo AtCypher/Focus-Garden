@@ -31,7 +31,7 @@ export function Onboarding() {
     },
     {
       title: 'Stay, or it wilts',
-      body: 'In Standard and Deep focus modes, leaving the app starts a short grace period. Come back in time and the plant lives. Gentle mode never wilts and allows pauses. A web app cannot block other apps, so Grove relies on you, with a reminder.',
+      body: 'In Standard and Deep focus modes, leaving the app starts a short grace period. Come back in time and the plant lives. Gentle mode never wilts and allows pauses, and the "leaving is allowed" option keeps any mode from wilting when you lock your phone. A web app cannot block other apps, so Grove relies on you, with a reminder.',
       art: <PlantArt species={getSpecies('daisy')} growth={1} wilted size={150} />,
     },
     {

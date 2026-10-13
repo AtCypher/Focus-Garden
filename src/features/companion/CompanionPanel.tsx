@@ -54,7 +54,9 @@ export function CompanionPanel({ engine, now, size = 110 }: Props) {
       lastLeave.current = engine.leaveCount;
       shown.current.delete('away');
       say(
-        engine.config.strictness === 'gentle' ? 'gentleLeave' : 'back',
+        engine.config.strictness === 'gentle' || engine.config.allowLeaving
+          ? 'gentleLeave'
+          : 'back',
         `back-${engine.leaveCount}`,
         now,
       );

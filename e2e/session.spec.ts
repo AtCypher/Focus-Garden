@@ -55,3 +55,25 @@ test('returning within the grace period keeps the plant alive', async ({ page })
   await expect(page.getByText('Standard', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Give up' })).toBeVisible();
 });
+
+test('with "leaving allowed" on, hiding the page in Standard mode does not wilt the plant', async ({
+  page,
+}) => {
+  await openApp(page);
+  await page.getByRole('button', { name: '60', exact: true }).click();
+  await page.getByLabel(/Leaving the app or locking my phone is allowed/).check();
+  await page.getByRole('button', { name: 'Plant' }).click();
+  await expect(page.getByRole('button', { name: 'Give up' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Standard · leaving allowed')).toBeVisible();
+
+  await setVisibility(page, 'hidden');
+  await page.waitForTimeout(16_000);
+  await setVisibility(page, 'visible');
+
+  await expect(page.getByRole('button', { name: 'Give up' })).toBeVisible();
+  await expect(page.getByText('It wilted')).toHaveCount(0);
+  // The choice is remembered as the default for next time.
+  await page.getByRole('button', { name: 'Give up' }).click();
+  await page.getByRole('button', { name: 'Back to planting' }).click();
+  await expect(page.getByLabel(/Leaving the app or locking my phone is allowed/)).toBeChecked();
+});

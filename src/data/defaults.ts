@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: Settings = {
   companionName: 'Pip',
   companionOutfitId: 'none',
   defaultStrictness: 'standard',
+  allowLeaving: false,
   defaultMode: 'countdown',
   defaultMinutes: 25,
   defaultSpeciesId: 'daisy',

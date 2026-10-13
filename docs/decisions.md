@@ -154,3 +154,10 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **Lighthouse 12 no longer has a PWA category**; installability is covered by the manifest,
   icons and service worker, and offline loading is verified by an E2E test instead. Scores on the
   production build: performance 97, accessibility 100, best practices 100, SEO 100.
+
+## After launch: leaving allowed
+
+- **"Leaving the app or locking my phone is allowed" replaces the "I need other apps" toggle.**
+  The web cannot distinguish a screen lock from an app switch, so one option covers both. It keeps
+  the chosen strictness (no pausing, the dew multiplier) and only turns leaving into a reminder
+  instead of a wilt. It is remembered as a default. Giving up still wilts the plant.

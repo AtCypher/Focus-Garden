@@ -144,6 +144,8 @@ export interface Settings {
   companionName: string;
   companionOutfitId: string;
   defaultStrictness: Strictness;
+  /** Leaving the app or locking the phone never wilts the plant, whatever the strictness. */
+  allowLeaving: boolean;
   defaultMode: TimerMode;
   defaultMinutes: number;
   defaultSpeciesId: string;

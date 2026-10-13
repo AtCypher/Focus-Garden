@@ -11,8 +11,8 @@ paywalled features. Everything stays on your device unless you export it yoursel
 - **Focus sessions** as a countdown (10 to 180 minutes), Pomodoro rounds with breaks, or a stopwatch.
   The first 10 seconds of any session can be cancelled for free.
 - **Strictness you choose**: Gentle (pauses allowed, plants never die), Standard (15-second grace
-  when you leave), Deep focus (5-second grace, hold-to-confirm give up). A one-tap "I need other
-  apps or tabs" switch turns a session Gentle so studying on your device is never punished.
+  when you leave), Deep focus (5-second grace, hold-to-confirm give up). A "leaving the app or locking my
+  phone is allowed" option keeps any strictness from wilting when you lock your phone or switch apps.
 - **24 original plant species** across seven biomes, each drawn as parametric SVG with seed, sprout,
   sapling and full stages plus a wilted state. Sessions of 60 minutes or more grow mature variants;
   120 minutes or more grow ancient ones with a soft glow.

@@ -232,6 +232,33 @@ describe('strictness: gentle', () => {
   });
 });
 
+describe('leaving allowed', () => {
+  it('never wilts on leaving in Standard or Deep focus, but keeps the strictness otherwise', () => {
+    for (const strictness of ['standard', 'deep'] as const) {
+      const s = start(config({ strictness, allowLeaving: true }), T0);
+      const after = run(s, [
+        ['hide', MIN],
+        ['show', 40 * MIN],
+      ]);
+      // Away for 39 minutes: the timer ran out meanwhile, so the plant completed.
+      expect(after.outcome).toBe('completed');
+      const brief = run(s, [
+        ['hide', MIN],
+        ['show', 5 * MIN],
+      ]);
+      expect(brief.status).toBe('running');
+      expect(brief.leaveCount).toBe(1);
+      expect(brief.graceEndsAt).toBeNull();
+      expect(reduce(brief, { type: 'pause' }, T0 + 6 * MIN).status).toBe('running');
+    }
+  });
+
+  it('still wilts on an explicit give up', () => {
+    const s = start(config({ strictness: 'standard', allowLeaving: true }), T0);
+    expect(reduce(s, { type: 'giveUp' }, T0 + 5 * MIN).outcome).toBe('wilted');
+  });
+});
+
 describe('stopwatch', () => {
   it('has no end time and grows fully by 10 minutes', () => {
     const s = start(config({ mode: 'stopwatch', plannedMinutes: 0 }), T0);

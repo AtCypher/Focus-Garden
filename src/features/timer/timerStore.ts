@@ -15,6 +15,7 @@ export interface PlantRequest {
   mode: TimerMode;
   minutes: number;
   strictness: Strictness;
+  allowLeaving: boolean;
   speciesId: string;
   tagId: string | null;
   pomodoro: PomodoroConfig;
@@ -145,6 +146,7 @@ export const useTimerStore = create<TimerState>()((set, get) => {
               ? req.pomodoro.focusMinutes
               : req.minutes,
         strictness: req.strictness,
+        allowLeaving: req.allowLeaving,
         speciesId: req.speciesId,
         tagId: req.tagId,
         round: req.mode === 'pomodoro' ? (req.round ?? 1) : null,

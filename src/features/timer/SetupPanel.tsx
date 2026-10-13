@@ -47,7 +47,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
   const [mode, setMode] = useState<TimerMode>(settings.defaultMode);
   const [minutes, setMinutes] = useState(suggestedMinutes ?? settings.defaultMinutes);
   const [strictness, setStrictness] = useState<Strictness>(settings.defaultStrictness);
-  const [needsOtherApps, setNeedsOtherApps] = useState(false);
+  const [allowLeaving, setAllowLeaving] = useState(settings.allowLeaving);
   const [speciesId, setSpeciesId] = useState(
     wallet.ownedSpeciesIds.includes(settings.defaultSpeciesId)
       ? settings.defaultSpeciesId
@@ -59,7 +59,6 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
     () => plantableSpecies(unlockContext(sessions, wallet, bestStreak)),
     [sessions, wallet, bestStreak],
   );
-  const effectiveStrictness: Strictness = needsOtherApps ? 'gentle' : strictness;
   const selected = owned.find((s) => s.id === speciesId) ?? owned[0];
 
   const submit = () => {
@@ -67,13 +66,15 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
       defaultMode: mode,
       defaultMinutes: minutes,
       defaultStrictness: strictness,
+      allowLeaving,
       defaultSpeciesId: selected.id,
       defaultTagId: tagId,
     });
     onPlant({
       mode,
       minutes,
-      strictness: effectiveStrictness,
+      strictness,
+      allowLeaving,
       speciesId: selected.id,
       tagId,
       pomodoro: settings.pomodoro,
@@ -158,18 +159,19 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
       )}
 
       <section className="card flex flex-col gap-4 p-4">
-        <StrictnessPicker value={strictness} onChange={setStrictness} disabled={needsOtherApps} />
+        <StrictnessPicker value={strictness} onChange={setStrictness} allowLeaving={allowLeaving} />
         <label className="flex cursor-pointer items-start gap-3 text-sm">
           <input
             type="checkbox"
             className="mt-0.5 h-5 w-5 accent-moss-700"
-            checked={needsOtherApps}
-            onChange={(e) => setNeedsOtherApps(e.target.checked)}
+            checked={allowLeaving}
+            onChange={(e) => setAllowLeaving(e.target.checked)}
           />
           <span>
-            <span className="font-medium">I need other apps or tabs for this session</span>
+            <span className="font-medium">Leaving the app or locking my phone is allowed</span>
             <span className="text-muted block text-xs">
-              Switches this session to Gentle so leaving never wilts the plant.
+              The plant never wilts when you leave; the timer keeps running and the strictness rules
+              for pausing and dew still apply. Remembered for next time.
             </span>
           </span>
         </label>

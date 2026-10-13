@@ -47,3 +47,10 @@ export const STRICTNESS_LABELS: Record<Strictness, { name: string; summary: stri
     summary: 'No pausing, 5-second grace, and giving up needs a long press.',
   },
 };
+
+/** Summary text for a strictness card when leaving is allowed. */
+export const STRICTNESS_LABELS_LEAVING_ALLOWED: Record<Strictness, string> = {
+  gentle: STRICTNESS_LABELS.gentle.summary,
+  standard: 'No pausing. Leaving or locking your phone is allowed; the plant keeps growing.',
+  deep: 'No pausing, giving up needs a long press. Leaving or locking your phone is allowed.',
+};

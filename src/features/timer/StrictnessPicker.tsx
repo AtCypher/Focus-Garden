@@ -1,15 +1,16 @@
 import type { Strictness } from '@/types';
-import { STRICTNESS_LABELS } from './rules';
+import { STRICTNESS_LABELS, STRICTNESS_LABELS_LEAVING_ALLOWED } from './rules';
 
 interface Props {
   value: Strictness;
   onChange: (s: Strictness) => void;
   disabled?: boolean;
+  allowLeaving?: boolean;
 }
 
 const ORDER: Strictness[] = ['gentle', 'standard', 'deep'];
 
-export function StrictnessPicker({ value, onChange, disabled }: Props) {
+export function StrictnessPicker({ value, onChange, disabled, allowLeaving = false }: Props) {
   return (
     <fieldset disabled={disabled} className="disabled:opacity-60">
       <legend className="mb-2 text-sm font-medium">Strictness</legend>
@@ -35,7 +36,7 @@ export function StrictnessPicker({ value, onChange, disabled }: Props) {
               />
               <span className="block font-medium">{STRICTNESS_LABELS[s].name}</span>
               <span className="text-muted mt-0.5 block text-xs leading-snug">
-                {STRICTNESS_LABELS[s].summary}
+                {allowLeaving ? STRICTNESS_LABELS_LEAVING_ALLOWED[s] : STRICTNESS_LABELS[s].summary}
               </span>
             </label>
           );
