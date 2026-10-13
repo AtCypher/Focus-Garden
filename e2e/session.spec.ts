@@ -36,7 +36,7 @@ test('leaving the page in Standard mode wilts the plant after the grace period',
   await page.waitForTimeout(16_000);
   await setVisibility(page, 'visible');
 
-  await expect(page.getByText('It wilted')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'It wilted' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Try 30 minutes/ })).toBeVisible();
   await page.getByRole('button', { name: 'Back to planting' }).click();
 

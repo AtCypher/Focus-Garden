@@ -24,7 +24,10 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: `VITE_BASE=${base} npx vite build --mode e2e && npx vite preview --port ${port} --strictPort`,
+    // VITE_BASE must reach both the build and the preview server: on GitHub Actions the config
+    // otherwise defaults to the Pages base (/Focus-Garden/) and the app is served at the wrong path.
+    command: `npx vite build --mode e2e && npx vite preview --port ${port} --strictPort`,
+    env: { VITE_BASE: base },
     port,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
