@@ -20,13 +20,15 @@ export function TagsSection() {
   const addTag = useAppStore((s) => s.addTag);
   const updateTag = useAppStore((s) => s.updateTag);
   const deleteTag = useAppStore((s) => s.deleteTag);
+  const goals = useAppStore((s) => s.progress.tagGoals);
+  const updateProgress = useAppStore((s) => s.updateProgress);
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLORS[0]);
 
   return (
     <Section
       title="Tags"
-      description="Label sessions (Study, Work, Reading…) to filter your stats."
+      description="Label sessions (Study, Work, Reading…) to filter your stats. The number is a weekly goal in minutes (0 for none)."
     >
       <ul className="flex flex-col gap-2">
         {tags.map((t) => (
@@ -43,6 +45,21 @@ export function TagsSection() {
               onChange={(e) => updateTag(t.id, { name: e.target.value })}
               aria-label={`Rename tag ${t.name}`}
               className={inputClass}
+            />
+            <input
+              type="number"
+              min={0}
+              max={3000}
+              step={15}
+              value={goals[t.id] ?? 0}
+              onChange={(e) =>
+                updateProgress((p) => ({
+                  tagGoals: { ...p.tagGoals, [t.id]: Math.max(0, Number(e.target.value) || 0) },
+                }))
+              }
+              aria-label={`Weekly goal in minutes for ${t.name}`}
+              title="Weekly goal (minutes, 0 = none)"
+              className={`${inputClass} w-24`}
             />
             <Button
               variant="ghost"

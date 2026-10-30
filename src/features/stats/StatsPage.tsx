@@ -25,6 +25,9 @@ import { achievementViews } from './achievements';
 import { getSpecies } from '@/data/species';
 import { PlantArt } from '@/art/PlantArt';
 import { IconCheck } from '@/app/ui/icons';
+import { StreakCalendar } from './StreakCalendar';
+import { RecapCard } from './RecapCard';
+import { TagGoals } from './TagGoals';
 
 const UNTAGGED = '#9aa39c';
 const TOOLTIP_STYLE = {
@@ -109,6 +112,8 @@ export function StatsPage() {
         />
       </section>
 
+      <RecapCard now={now} />
+
       <section className="card p-4" aria-label="Daily goal">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">Daily goal</span>
@@ -130,6 +135,10 @@ export function StatsPage() {
           />
         </div>
       </section>
+
+      <StreakCalendar sessions={sessions} goalMinutes={settings.dailyGoalMinutes} now={now} />
+
+      <TagGoals now={now} />
 
       <section className="card p-4" aria-label="Focus minutes per day">
         <h2 className="text-sm font-medium">Last 14 days</h2>

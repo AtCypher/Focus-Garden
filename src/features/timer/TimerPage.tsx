@@ -6,6 +6,7 @@ import { SessionView } from './SessionView';
 import { BreakView } from './BreakView';
 import { ResultView } from './ResultView';
 import { DailyVisit } from '@/features/companion/DailyVisit';
+import { RecapCard } from '@/features/stats/RecapCard';
 
 export function TimerPage() {
   const engine = useTimerStore((s) => s.engine);
@@ -16,6 +17,7 @@ export function TimerPage() {
   const dismissResult = useTimerStore((s) => s.dismissResult);
   const lastSession = useAppStore((s) => s.sessions[s.sessions.length - 1]);
   const [suggested, setSuggested] = useState<number | undefined>(undefined);
+  const [openedAt] = useState(() => Date.now());
 
   // ?plant=<preset id|preset name|minutes> starts a session straight away (Shortcuts, bookmarks).
   useEffect(() => {
@@ -88,8 +90,9 @@ export function TimerPage() {
 
   return (
     <>
-      <div className="px-4 pt-4 sm:px-6">
+      <div className="mx-auto flex max-w-xl flex-col gap-3 px-4 pt-4 sm:px-6">
         <DailyVisit />
+        <RecapCard dismissible now={openedAt} />
       </div>
       <SetupPanel key={suggested ?? 'default'} onPlant={onPlant} suggestedMinutes={suggested} />
     </>
