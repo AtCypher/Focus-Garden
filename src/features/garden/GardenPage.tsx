@@ -17,6 +17,10 @@ import { season as seasonOf, timeOfDay, TIME_TINTS } from './daylight';
 import { biomeRegions } from './layout';
 import { renderGardenPng, shareOrDownload } from './shareImage';
 import { ambient, AmbientPlayer } from '@/features/timer/audio';
+import { recordSightings, visitorsToday } from '@/features/collection/rituals';
+import { dayKey } from '@/lib/dates';
+import { evaluateStreak } from '@/features/stats/streaks';
+import { VISITOR_BY_ID } from '@/data/visitors';
 import { useUiStore } from '@/app/store/uiStore';
 import { formatHours as fmtHours } from '@/lib/dates';
 
@@ -45,7 +49,39 @@ export function GardenPage() {
     return () => clearInterval(t);
   }, []);
 
-  const { level, totalMinutes, layout, restoration, shown, plants } = useGarden(period, now);
+  const { level, totalMinutes, layout, restoration, shown, plants, sessions } = useGarden(
+    period,
+    now,
+  );
+  const collection = useAppStore((s) => s.progress);
+  const updateProgress = useAppStore((s) => s.updateProgress);
+  const dailyGoal = useAppStore((s) => s.settings.dailyGoalMinutes);
+  const streakState = useAppStore((s) => s.streak);
+  const freezes = useAppStore((s) => s.wallet.streakFreezes);
+  const today = dayKey(now);
+  const visitors = useMemo(
+    () => visitorsToday(today, level, restoration, timeOfDay(new Date(now)), layout.occupied),
+    [today, level, restoration, now, layout.occupied],
+  );
+  const weather = useMemo(() => {
+    const st = evaluateStreak(sessions, dailyGoal, streakState, freezes, now);
+    const wiltedToday = sessions.some((s) => s.outcome === 'wilted' && dayKey(s.endedAt) === today);
+    if (st.todayMet && st.display >= 3) return 'sun' as const;
+    if (st.todayMet) return 'rain' as const;
+    if (wiltedToday) return 'mist' as const;
+    return null;
+  }, [sessions, dailyGoal, streakState, freezes, now, today]);
+  useEffect(() => {
+    const r = recordSightings(collection, visitors, today, new Date(now).toISOString());
+    if (!r) return;
+    updateProgress(r.patch);
+    if (r.firstSeen.length > 0) {
+      const names = r.firstSeen.map((id) => VISITOR_BY_ID[id]?.name.toLowerCase()).filter(Boolean);
+      showToast(
+        `New visitor${names.length > 1 ? 's' : ''}: ${names.join(', ')}. Added to your collection.`,
+      );
+    }
+  }, [collection, visitors, today, now, updateProgress, showToast]);
   const next = nextGardenLevel(totalMinutes);
   const progress = levelProgress(totalMinutes);
   const selectedPlant = useMemo(
@@ -156,6 +192,8 @@ export function GardenPage() {
           restoration={restoration}
           time={time}
           season={seasons ? seasonOf(new Date(now)) : null}
+          visitors={visitors}
+          weather={weather}
           selectedId={selected}
           arranging={arranging && (moving !== null || placing !== null)}
           onSelectPlant={(id) => setSelected((cur) => (cur === id ? null : id))}

@@ -7,6 +7,8 @@ import { Companion, type CompanionMood } from '@/art/Companion';
 import { getSpecies } from '@/data/species';
 import { pickMessage, type MessageKind } from './messages';
 import { useReducedMotion } from '@/app/useTheme';
+import { companionLevel } from '@/features/collection/rituals';
+import { totalFocusMinutes } from '@/features/garden/layout';
 
 interface Props {
   engine: EngineState;
@@ -21,6 +23,7 @@ const BUBBLE_MS = 8000;
 export function CompanionPanel({ engine, now, size = 110 }: Props) {
   const name = useAppStore((s) => s.settings.companionName);
   const outfit = useAppStore((s) => s.settings.companionOutfitId);
+  const level = useAppStore((s) => companionLevel(totalFocusMinutes(s.sessions)).level);
   const species = useMemo(() => getSpecies(engine.config.speciesId), [engine.config.speciesId]);
   const reduced = useReducedMotion();
 
@@ -79,7 +82,13 @@ export function CompanionPanel({ engine, now, size = 110 }: Props) {
 
   return (
     <div className="flex items-end gap-2">
-      <Companion mood={mood} outfitId={outfit} size={size} label={`${name}, ${mood}`} />
+      <Companion
+        mood={mood}
+        outfitId={outfit}
+        size={size}
+        label={`${name}, ${mood}`}
+        level={level}
+      />
       <div className="min-h-12 max-w-48">
         <AnimatePresence>
           {visible && (
@@ -112,6 +121,7 @@ export function ResultCompanion({
 }) {
   const name = useAppStore((s) => s.settings.companionName);
   const outfit = useAppStore((s) => s.settings.companionOutfitId);
+  const level = useAppStore((s) => companionLevel(totalFocusMinutes(s.sessions)).level);
   const [kind, setKind] = useState(outcome === 'wilted');
   useEffect(() => {
     if (outcome !== 'wilted') return;
@@ -127,7 +137,13 @@ export function ResultCompanion({
   );
   return (
     <div className="flex items-end gap-2">
-      <Companion mood={mood} outfitId={outfit} size={100} label={`${name}, ${mood}`} />
+      <Companion
+        mood={mood}
+        outfitId={outfit}
+        size={100}
+        label={`${name}, ${mood}`}
+        level={level}
+      />
       <p
         className="card max-w-52 rounded-2xl rounded-bl-sm px-3 py-2 text-left text-sm leading-snug"
         role="status"

@@ -244,6 +244,8 @@ export interface ProgressState {
   visitDays: number;
   finds: { id: string; foundAt: ISODate }[];
   visitors: { id: string; firstSeenAt: ISODate; sightings: number }[];
+  /** Day whose visitors have been counted. */
+  sightingDay: DayKey | null;
   presets: Preset[];
   challenges: ChallengeProgress[];
   /** Week keys (Monday day key) whose recap has been dismissed. */

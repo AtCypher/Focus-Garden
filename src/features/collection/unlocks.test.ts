@@ -17,6 +17,8 @@ const base: UnlockContext = {
   bestStreak: 0,
   longestSessionMinutes: 0,
   completedSessions: 0,
+  season: 'winter',
+  completedChallenges: [],
 };
 
 describe('species status', () => {
@@ -72,10 +74,14 @@ describe('species status', () => {
     };
     expect(newlyEarnedSpecies(owned)).toEqual([]);
   });
-  it('only lists plantable species in unlocked biomes', () => {
+  it('only lists plantable species in unlocked biomes, plus the season special', () => {
     const ctx = { ...base, wallet: { ...base.wallet, ownedSpeciesIds: ['daisy', 'oak'] } };
-    expect(plantableSpecies(ctx).map((s) => s.id)).toEqual(['daisy']);
-    expect(plantableSpecies({ ...ctx, level: 3 }).map((s) => s.id)).toEqual(['daisy', 'oak']);
+    expect(plantableSpecies(ctx).map((s) => s.id)).toEqual(['daisy', 'frostlily']);
+    expect(plantableSpecies({ ...ctx, level: 3 }).map((s) => s.id)).toEqual([
+      'daisy',
+      'oak',
+      'frostlily',
+    ]);
   });
   it('builds a context from sessions', () => {
     const s = (minutes: number, outcome: Session['outcome']): Session => ({

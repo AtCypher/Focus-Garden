@@ -54,6 +54,7 @@ export const DEFAULT_PROGRESS: ProgressState = {
   visitDays: 0,
   finds: [],
   visitors: [],
+  sightingDay: null,
   presets: [],
   challenges: [],
   recapsSeen: [],

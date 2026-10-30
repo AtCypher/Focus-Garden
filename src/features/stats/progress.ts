@@ -5,6 +5,8 @@ import { evaluateStreak } from './streaks';
 import { computeMetrics, evaluateAchievements } from './achievements';
 import { pickMessage } from '@/features/companion/messages';
 import { applyAppBadge, shouldShowBadge } from './badge';
+import { evaluateChallenges } from '@/features/collection/rituals';
+import { CHALLENGE_BY_ID } from '@/data/challenges';
 
 export function updateProgress(now: Date = new Date(), announce = true): void {
   const app = useAppStore.getState();
@@ -35,6 +37,16 @@ export function updateProgress(now: Date = new Date(), announce = true): void {
     );
   if (changed) fresh.setAchievements(result.list);
 
+  const ch = evaluateChallenges(
+    fresh.progress,
+    fresh.sessions,
+    fresh.settings.dailyGoalMinutes,
+    now,
+  );
+  if (JSON.stringify(ch.challenges) !== JSON.stringify(fresh.progress.challenges)) {
+    fresh.updateProgress({ challenges: ch.challenges });
+  }
+
   applyAppBadge(
     shouldShowBadge({
       enabled: fresh.settings.streakBadge,
@@ -46,6 +58,18 @@ export function updateProgress(now: Date = new Date(), announce = true): void {
 
   if (!announce) return;
   const toast = useUiStore.getState().showToast;
+  if (ch.completed.length > 0) {
+    toast(
+      `${CHALLENGE_BY_ID[ch.completed[0]]?.name ?? 'Challenge'} complete! A new species is yours.`,
+    );
+    return;
+  }
+  if (ch.failed.length > 0) {
+    toast(
+      `${CHALLENGE_BY_ID[ch.failed[0]]?.name ?? 'The challenge'} ended early. There is always another week.`,
+    );
+    return;
+  }
   if (result.unlocked.length === 1) toast(`Achievement: ${result.unlocked[0].name}.`);
   else if (result.unlocked.length > 1) toast(`${result.unlocked.length} achievements unlocked.`);
   else if (streak.earned > 0) toast(pickMessage('streak', 2, { days: streak.display }));

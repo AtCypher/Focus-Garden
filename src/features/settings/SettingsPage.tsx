@@ -10,12 +10,19 @@ import {
   WakeLock,
 } from '@/features/timer/platform';
 import type { AmbientSound, ThemePreference } from '@/types';
+import { companionLevel, COMPANION_LEVELS } from '@/features/collection/rituals';
+import { totalFocusMinutes } from '@/features/garden/layout';
+import { Companion } from '@/art/Companion';
+import { formatHours } from '@/lib/dates';
 import { AMBIENT_OPTIONS, AmbientPlayer } from '@/features/timer/audio';
 
 export function SettingsPage() {
   const settings = useAppStore((s) => s.settings);
   const update = useAppStore((s) => s.updateSettings);
   const [perm, setPerm] = useState(notificationPermission());
+  const totalMinutes = useAppStore((s) => totalFocusMinutes(s.sessions));
+  const pip = companionLevel(totalMinutes);
+  const nextPip = COMPANION_LEVELS.find((l) => l.level === pip.level + 1);
   const pomo = settings.pomodoro;
   const setPomo = (patch: Partial<typeof pomo>) => update({ pomodoro: { ...pomo, ...patch } });
 
@@ -24,6 +31,25 @@ export function SettingsPage() {
       <h1 className="font-display text-3xl font-semibold">Settings</h1>
 
       <Section title="Companion">
+        <div className="flex items-center gap-3">
+          <Companion
+            mood="idle"
+            outfitId={settings.companionOutfitId}
+            level={pip.level}
+            size={80}
+            label={settings.companionName}
+          />
+          <p className="text-sm">
+            <span className="font-medium">
+              {settings.companionName}, {pip.title.toLowerCase()} gardener (level {pip.level} of 7)
+            </span>
+            <span className="text-muted block text-xs">
+              {nextPip
+                ? `${formatHours(nextPip.minutes - totalMinutes)} of focus until ${nextPip.title}.`
+                : 'Fully grown. A sage among sprouts.'}
+            </span>
+          </p>
+        </div>
         <Row label="Name" htmlFor="companion-name">
           <input
             id="companion-name"

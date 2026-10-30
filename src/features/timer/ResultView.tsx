@@ -6,6 +6,9 @@ import { PlantArt } from '@/art/PlantArt';
 import { getSpecies } from '@/data/species';
 import { IconDew } from '@/app/ui/icons';
 import { ResultCompanion } from '@/features/companion/CompanionPanel';
+import { useUiStore } from '@/app/store/uiStore';
+import { FIND_BY_ID } from '@/data/finds';
+import { FindArt } from '@/art/Finds';
 
 interface Props {
   result: EngineState;
@@ -16,6 +19,7 @@ interface Props {
 
 export function ResultView({ result, dewEarned, onDone, onRetryShorter }: Props) {
   const species = useMemo(() => getSpecies(result.config.speciesId), [result.config.speciesId]);
+  const lastFind = useUiStore((s) => s.lastFind);
   const minutes = actualMinutes(result, result.finishedAt ?? result.startedAt);
   const outcome = result.outcome;
   const dew =
@@ -63,6 +67,16 @@ export function ResultView({ result, dewEarned, onDone, onRetryShorter }: Props)
         minutes={minutes}
         plant={species.name.toLowerCase()}
       />
+      {outcome === 'completed' && lastFind && FIND_BY_ID[lastFind] && (
+        <p className="card inline-flex items-center gap-2 px-3 py-2 text-sm" role="status">
+          <FindArt id={lastFind} size={32} />
+          <span>
+            Pip found a{' '}
+            <span className="font-medium">{FIND_BY_ID[lastFind].name.toLowerCase()}</span>. It is on
+            the shelf in the Seed Book.
+          </span>
+        </p>
+      )}
       <div className="flex w-full flex-col gap-2">
         {outcome === 'wilted' && (
           <Button size="lg" onClick={() => onRetryShorter(shorter)}>

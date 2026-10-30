@@ -11,6 +11,8 @@ import { chooseTileForNewPlant, totalFocusMinutes } from '@/features/garden/layo
 import { getGardenLevel } from '@/data/gardenLevels';
 import { useUiStore } from './store/uiStore';
 import { grantEarnedSpecies } from '@/features/collection/grant';
+import { countEventSession, rollFind } from '@/features/collection/rituals';
+import { DECORATION_INFO } from '@/data/decorations';
 import { updateProgress } from '@/features/stats/progress';
 
 function useBoot() {
@@ -36,6 +38,31 @@ function useBoot() {
         chooseTile: (biome) => chooseTileForNewPlant(before, biome, app.plants, app.decorations),
       });
       app.recordSession(session, plant);
+      const ui = useUiStore.getState();
+      ui.setLastFind(null);
+      if (session.outcome === 'completed') {
+        const store = useAppStore.getState();
+        const find = rollFind(
+          session.id,
+          store.progress.finds.map((f) => f.id),
+        );
+        if (find) {
+          store.updateProgress((p) => ({
+            finds: [...p.finds, { id: find, foundAt: session.endedAt }],
+          }));
+          ui.setLastFind(find);
+        }
+        const ev = countEventSession(useAppStore.getState().progress, new Date(session.endedAt));
+        if (ev) {
+          useAppStore.getState().updateProgress(ev.patch);
+          if (ev.reward) {
+            useAppStore.getState().buyDecoration(ev.reward.reward, 0);
+            ui.showToast(
+              `${ev.reward.name}: you earned a ${DECORATION_INFO[ev.reward.reward].name.toLowerCase()}. Place it in the garden.`,
+            );
+          }
+        }
+      }
       const after = getGardenLevel(totalFocusMinutes(useAppStore.getState().sessions)).level;
       if (after > before) useUiStore.getState().setLevelUp({ from: before, to: after });
       updateProgress();

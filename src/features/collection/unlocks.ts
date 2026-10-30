@@ -8,6 +8,8 @@ import { SPECIES } from '@/data/species';
 import { BIOME_BY_ID } from '@/data/biomes';
 import { getGardenLevel } from '@/data/gardenLevels';
 import { totalFocusMinutes } from '@/features/garden/layout';
+import { season as seasonOf } from '@/features/garden/daylight';
+import type { Season } from '@/types';
 
 export interface UnlockContext {
   wallet: Wallet;
@@ -16,12 +18,15 @@ export interface UnlockContext {
   bestStreak: number;
   longestSessionMinutes: number;
   completedSessions: number;
+  season: Season;
+  completedChallenges: string[];
 }
 
 export function unlockContext(
   sessions: Session[],
   wallet: Wallet,
   bestStreak: number,
+  extra: { season?: Season; completedChallenges?: string[] } = {},
 ): UnlockContext {
   const completed = sessions.filter((s) => s.outcome === 'completed');
   const totalMinutes = totalFocusMinutes(sessions);
@@ -32,6 +37,8 @@ export function unlockContext(
     bestStreak,
     longestSessionMinutes: completed.reduce((m, s) => Math.max(m, s.actualMinutes), 0),
     completedSessions: completed.length,
+    season: extra.season ?? seasonOf(new Date()),
+    completedChallenges: extra.completedChallenges ?? [],
   };
 }
 
@@ -39,7 +46,9 @@ export type SpeciesStatus =
   | { kind: 'owned' }
   | { kind: 'buyable'; cost: number; affordable: boolean }
   | { kind: 'biomeLocked'; level: number; hint: string }
-  | { kind: 'locked'; hint: string; progress: number };
+  | { kind: 'locked'; hint: string; progress: number }
+  /** Seasonal species: free right now, or waiting for its season. */
+  | { kind: 'seasonal'; inSeason: boolean; season: Season };
 
 export function biomeUnlocked(species: Species, level: number): boolean {
   return BIOME_BY_ID[species.biome].unlockLevel <= level;
@@ -59,6 +68,8 @@ export function milestoneReached(species: Species, ctx: UnlockContext): boolean 
       return ctx.completedSessions >= u.count;
     case 'gardenLevel':
       return ctx.level >= u.level;
+    case 'challenge':
+      return ctx.completedChallenges.includes(u.challengeId);
     default:
       return false;
   }
@@ -102,12 +113,21 @@ function milestoneProgress(species: Species, ctx: UnlockContext): number {
       return ratio(ctx.completedSessions, u.count);
     case 'gardenLevel':
       return ratio(ctx.level, u.level);
+    case 'challenge':
+      return ctx.completedChallenges.includes(u.challengeId) ? 1 : 0;
     default:
       return 0;
   }
 }
 
 export function speciesStatus(species: Species, ctx: UnlockContext): SpeciesStatus {
+  if (species.unlock.kind === 'season') {
+    return {
+      kind: 'seasonal',
+      inSeason: species.unlock.season === ctx.season,
+      season: species.unlock.season,
+    };
+  }
   if (ctx.wallet.ownedSpeciesIds.includes(species.id)) return { kind: 'owned' };
   if (!biomeUnlocked(species, ctx.level)) {
     const lvl = BIOME_BY_ID[species.biome].unlockLevel;
@@ -147,6 +167,10 @@ export function grownCounts(plants: Plant[]): Record<string, number> {
 /** Species the user can plant right now: owned and in an unlocked biome. */
 export function plantableSpecies(ctx: UnlockContext): Species[] {
   return SPECIES.filter(
-    (s) => ctx.wallet.ownedSpeciesIds.includes(s.id) && biomeUnlocked(s, ctx.level),
+    (s) =>
+      biomeUnlocked(s, ctx.level) &&
+      (s.unlock.kind === 'season'
+        ? s.unlock.season === ctx.season
+        : ctx.wallet.ownedSpeciesIds.includes(s.id)),
   );
 }

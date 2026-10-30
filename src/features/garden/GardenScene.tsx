@@ -7,6 +7,8 @@ import { mix } from '@/art/plants/common';
 import { PlantArt } from '@/art/PlantArt';
 import { DecorationArt } from '@/art/Decorations';
 import { SceneryBack, SceneryFront } from '@/art/Scenery';
+import { VisitorArt } from '@/art/Visitors';
+import type { Sighting } from '@/features/collection/rituals';
 import {
   biomeOfTile,
   gardenBounds,
@@ -24,6 +26,10 @@ export interface GardenSceneProps {
   restoration: Record<Biome, number>;
   time?: TimeOfDay;
   season?: Season | null;
+  /** Wildlife in the garden today. */
+  visitors?: Sighting[];
+  /** Weather overlay tied to the user's day. */
+  weather?: 'rain' | 'sun' | 'mist' | null;
   selectedId?: string | null;
   /** Arrange mode: free tiles become targets. */
   arranging?: boolean;
@@ -54,6 +60,8 @@ export function GardenScene({
   restoration,
   time = 'day',
   season = null,
+  visitors = [],
+  weather = null,
   selectedId = null,
   arranging = false,
   onSelectPlant,
@@ -279,7 +287,61 @@ export function GardenScene({
         <g key={i.key}>{i.node}</g>
       ))}
 
+      {visitors.map((v) => {
+        const { x, y } = tileToScreen(v.tile);
+        return (
+          <g
+            key={v.visitor.id}
+            transform={`translate(${x} ${y + 6})`}
+            className="gd-visitor"
+            aria-label={`${v.visitor.name} visiting`}
+            role="img"
+          >
+            <VisitorArt id={v.visitor.id} />
+          </g>
+        );
+      })}
       <SceneryFront features={level.features} box={bounds} night={night} />
+      {weather === 'rain' && (
+        <g
+          stroke="#7fc3e0"
+          strokeWidth="1.5"
+          opacity="0.7"
+          className="gd-rain"
+          pointerEvents="none"
+        >
+          {Array.from({ length: 28 }, (_, i) => (
+            <path key={i} d={`M${vb.x + ((i * 37) % vb.w)} ${vb.y + ((i * 53) % vb.h)} l-4 12`} />
+          ))}
+        </g>
+      )}
+      {weather === 'sun' && (
+        <g className="gd-sun" pointerEvents="none">
+          <circle cx={vb.x + vb.w - 70} cy={vb.y + 60} r="22" fill="#ffe08a" opacity="0.9" />
+          {Array.from({ length: 8 }, (_, i) => (
+            <path
+              key={i}
+              d={`M${vb.x + vb.w - 70} ${vb.y + 60} m${Math.cos((i * Math.PI) / 4) * 30} ${Math.sin((i * Math.PI) / 4) * 30} l${Math.cos((i * Math.PI) / 4) * 12} ${Math.sin((i * Math.PI) / 4) * 12}`}
+              stroke="#ffe08a"
+              strokeWidth="3"
+              strokeLinecap="round"
+              opacity="0.8"
+            />
+          ))}
+        </g>
+      )}
+      {weather === 'mist' && (
+        <rect
+          x={vb.x}
+          y={vb.y}
+          width={vb.w}
+          height={vb.h}
+          fill="#dfe8f2"
+          opacity="0.35"
+          rx="24"
+          pointerEvents="none"
+        />
+      )}
 
       {tint.opacity > 0 && (
         <rect

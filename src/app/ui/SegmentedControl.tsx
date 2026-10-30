@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string>({
             <label
               key={opt.value}
               htmlFor={inputId}
-              className={`focus-ring relative cursor-pointer rounded-full px-3 py-2 text-center text-sm font-medium transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-dew-500 ${
+              className={`focus-ring relative cursor-pointer rounded-full px-1.5 py-2 text-center text-xs font-medium sm:px-3 sm:text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-dew-500 ${
                 checked
                   ? 'bg-white text-moss-900 shadow-sm dark:bg-moss-600 dark:text-white'
                   : 'text-moss-700 hover:text-moss-900 dark:text-moss-200'

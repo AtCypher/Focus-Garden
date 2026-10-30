@@ -8,6 +8,8 @@ export interface CompanionProps {
   className?: string;
   /** Accessible name, e.g. "Pip, watering". */
   label?: string;
+  /** Growth level 1..7: a bigger leaf, a flower, a brass can, a lantern, a glow. */
+  level?: number;
 }
 
 const BODY = '#cfe8a8';
@@ -28,6 +30,7 @@ export function Companion({
   size = 120,
   className = '',
   label,
+  level = 1,
 }: CompanionProps) {
   const eyesClosed = mood === 'dozing';
   const sad = mood === 'sad';
@@ -54,6 +57,7 @@ export function Companion({
     >
       {/* shadow */}
       <ellipse cx="60" cy="106" rx="26" ry="5" fill="#000" opacity="0.08" />
+      {level >= 7 && <circle cx="60" cy="70" r="44" fill="#f3e58a" opacity="0.25" />}
 
       <g className={bodyAnim} style={{ transformOrigin: '60px 100px' }}>
         {/* feet */}
@@ -77,7 +81,28 @@ export function Companion({
             strokeLinecap="round"
             fill="none"
           />
-          <path d="M60 30 Q48 26 46 16 Q58 16 60 30Z" fill={LEAF} />
+          <path
+            d={
+              level >= 2 ? 'M60 30 Q44 26 40 12 Q58 14 60 30Z' : 'M60 30 Q48 26 46 16 Q58 16 60 30Z'
+            }
+            fill={LEAF}
+          />
+          {level >= 3 && (
+            <g transform="translate(60 20)">
+              {[0, 72, 144, 216, 288].map((a) => (
+                <ellipse
+                  key={a}
+                  cx="0"
+                  cy="-5"
+                  rx="2.5"
+                  ry="4"
+                  transform={`rotate(${a})`}
+                  fill="#f0a3c0"
+                />
+              ))}
+              <circle cx="0" cy="0" r="2" fill="#f3c969" />
+            </g>
+          )}
           <path d="M60 26 Q70 20 74 10 Q62 12 60 26Z" fill={LEAF_DARK} />
         </g>
 
@@ -104,6 +129,17 @@ export function Companion({
             <circle cx="49" cy="66" r="7" />
             <circle cx="71" cy="66" r="7" />
             <path d="M56 66 h8" />
+          </g>
+        )}
+
+        {level >= 5 && (
+          <circle cx="38" cy="86" r="4" fill="#f3c969" stroke="#c9a24a" strokeWidth="1" />
+        )}
+        {level >= 6 && (
+          <g transform="translate(30 92)">
+            <rect x="-3" y="-6" width="6" height="8" rx="1.5" fill="#e9b23c" />
+            <rect x="-2" y="-5" width="4" height="6" rx="1" fill="#fff3c4" />
+            <path d="M-3 -6 h6 l-1 -2 h-4Z" fill="#5d3e2b" />
           </g>
         )}
 

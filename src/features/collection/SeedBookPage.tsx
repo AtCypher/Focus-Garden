@@ -14,8 +14,12 @@ import { PlantArt } from '@/art/PlantArt';
 import { Companion } from '@/art/Companion';
 import { DecorationArt } from '@/art/Decorations';
 import { grownCounts, speciesStatus, unlockContext } from './unlocks';
+import { CollectionTab } from './CollectionTab';
+import { ChallengesTab } from './ChallengesTab';
+import { completedChallengeIds } from './rituals';
+import { EVENT_DECORATIONS } from '@/data/decorations';
 
-type Tab = 'species' | 'decorations' | 'outfits';
+type Tab = 'species' | 'decorations' | 'outfits' | 'collection' | 'challenges';
 
 export function SeedBookPage() {
   const [tab, setTab] = useState<Tab>('species');
@@ -29,8 +33,10 @@ export function SeedBookPage() {
         label="Collection"
         options={[
           { value: 'species', label: 'Species' },
-          { value: 'decorations', label: 'Decorations' },
+          { value: 'decorations', label: 'Decor' },
           { value: 'outfits', label: 'Outfits' },
+          { value: 'collection', label: 'Finds' },
+          { value: 'challenges', label: 'Challenges' },
         ]}
         value={tab}
         onChange={setTab}
@@ -38,6 +44,8 @@ export function SeedBookPage() {
       {tab === 'species' && <SpeciesTab />}
       {tab === 'decorations' && <DecorationsTab />}
       {tab === 'outfits' && <OutfitsTab />}
+      {tab === 'collection' && <CollectionTab />}
+      {tab === 'challenges' && <ChallengesTab />}
     </div>
   );
 }
@@ -47,11 +55,15 @@ function SpeciesTab() {
   const plants = useAppStore((s) => s.plants);
   const wallet = useAppStore((s) => s.wallet);
   const bestStreak = useAppStore((s) => s.streak.best);
+  const progress = useAppStore((s) => s.progress);
   const buySpecies = useAppStore((s) => s.buySpecies);
   const showToast = useUiStore((s) => s.showToast);
   const ctx = useMemo(
-    () => unlockContext(sessions, wallet, bestStreak),
-    [sessions, wallet, bestStreak],
+    () =>
+      unlockContext(sessions, wallet, bestStreak, {
+        completedChallenges: completedChallengeIds(progress),
+      }),
+    [sessions, wallet, bestStreak, progress],
   );
   const counts = useMemo(() => grownCounts(plants), [plants]);
   const owned = SPECIES.filter((s) => wallet.ownedSpeciesIds.includes(s.id)).length;
@@ -115,7 +127,7 @@ function SpeciesCard({
   grown: number;
   onBuy: () => void;
 }) {
-  const locked = status.kind !== 'owned';
+  const locked = status.kind !== 'owned' && !(status.kind === 'seasonal' && status.inSeason);
   return (
     <li className="card flex flex-col items-center p-3 text-center">
       <div
@@ -170,6 +182,15 @@ function SpeciesCard({
         </div>
       )}
       {status.kind === 'biomeLocked' && <p className="text-muted mt-2 text-xs">{status.hint}</p>}
+      {status.kind === 'seasonal' && (
+        <p
+          className={`mt-2 text-xs ${status.inSeason ? 'font-medium text-moss-700 dark:text-moss-300' : 'text-muted'}`}
+        >
+          {status.inSeason
+            ? `Free this ${status.season}. Grown ${grown} time${grown === 1 ? '' : 's'}.`
+            : `Comes back in ${status.season}.`}
+        </p>
+      )}
     </li>
   );
 }
@@ -179,7 +200,9 @@ function DecorationsTab() {
   const decorations = useAppStore((s) => s.decorations);
   const buy = useAppStore((s) => s.buyDecoration);
   const showToast = useUiStore((s) => s.showToast);
-  const kinds = Object.keys(DECORATION_INFO) as DecorationKind[];
+  const kinds = (Object.keys(DECORATION_INFO) as DecorationKind[]).filter(
+    (k) => !EVENT_DECORATIONS.includes(k) || (wallet.ownedDecorations[k] ?? 0) > 0,
+  );
   return (
     <div>
       <p className="text-muted mb-3 text-sm">
@@ -204,18 +227,22 @@ function DecorationsTab() {
                   Owned {owned} · placed {placed}
                 </p>
               )}
-              <Button
-                size="sm"
-                className="mt-2"
-                disabled={wallet.dew < info.cost}
-                aria-label={`Buy ${info.name} for ${info.cost} dew`}
-                onClick={() => {
-                  if (buy(kind, info.cost))
-                    showToast(`${info.name} bought. Place it in the garden.`);
-                }}
-              >
-                {info.cost} dew
-              </Button>
+              {info.cost === 0 ? (
+                <p className="text-muted mt-2 text-xs">Event reward</p>
+              ) : (
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  disabled={wallet.dew < info.cost}
+                  aria-label={`Buy ${info.name} for ${info.cost} dew`}
+                  onClick={() => {
+                    if (buy(kind, info.cost))
+                      showToast(`${info.name} bought. Place it in the garden.`);
+                  }}
+                >
+                  {info.cost} dew
+                </Button>
+              )}
             </li>
           );
         })}

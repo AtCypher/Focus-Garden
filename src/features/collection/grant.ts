@@ -1,11 +1,14 @@
 import { useAppStore } from '@/app/store/appStore';
 import { useUiStore } from '@/app/store/uiStore';
 import { newlyEarnedSpecies, unlockContext } from './unlocks';
+import { completedChallengeIds } from './rituals';
 
 /** Give the user any milestone species they have now earned, with a toast. */
 export function grantEarnedSpecies(): void {
   const app = useAppStore.getState();
-  const ctx = unlockContext(app.sessions, app.wallet, app.streak.best);
+  const ctx = unlockContext(app.sessions, app.wallet, app.streak.best, {
+    completedChallenges: completedChallengeIds(app.progress),
+  });
   const earned = newlyEarnedSpecies(ctx);
   for (const s of earned) app.grantSpecies(s.id);
   if (earned.length === 1)

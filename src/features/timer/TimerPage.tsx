@@ -5,6 +5,7 @@ import { SetupPanel } from './SetupPanel';
 import { SessionView } from './SessionView';
 import { BreakView } from './BreakView';
 import { ResultView } from './ResultView';
+import { DailyVisit } from '@/features/companion/DailyVisit';
 
 export function TimerPage() {
   const engine = useTimerStore((s) => s.engine);
@@ -85,5 +86,12 @@ export function TimerPage() {
     plant(req);
   };
 
-  return <SetupPanel key={suggested ?? 'default'} onPlant={onPlant} suggestedMinutes={suggested} />;
+  return (
+    <>
+      <div className="px-4 pt-4 sm:px-6">
+        <DailyVisit />
+      </div>
+      <SetupPanel key={suggested ?? 'default'} onPlant={onPlant} suggestedMinutes={suggested} />
+    </>
+  );
 }

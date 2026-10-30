@@ -19,9 +19,17 @@ export function TaskList({ sessionId, compact = false, className = '' }: Props) 
   const deleteTask = useAppStore((s) => s.deleteTask);
   const clearDone = useAppStore((s) => s.clearDoneTasks);
   const [text, setText] = useState('');
-  const open = tasks.filter((t) => !t.done);
   const done = tasks.filter((t) => t.done);
-  const shown = compact ? open : tasks;
+  // During a session, keep tasks ticked in this session visible (struck through) for the win.
+  const shown = compact
+    ? tasks.filter((t) => !t.done || (sessionId && t.sessionId === sessionId))
+    : tasks;
+  const add = () => {
+    if (text.trim()) {
+      addTask(text);
+      setText('');
+    }
+  };
 
   return (
     <div className={className}>
@@ -59,28 +67,25 @@ export function TaskList({ sessionId, compact = false, className = '' }: Props) 
           {compact ? 'No open tasks.' : 'Nothing here yet. Add something small.'}
         </p>
       )}
-      <form
-        className="mt-2 flex items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (text.trim()) {
-            addTask(text);
-            setText('');
-          }
-        }}
-      >
+      <div className="mt-2 flex items-center gap-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              add();
+            }
+          }}
           placeholder="Add a task"
           aria-label="New task"
           maxLength={120}
           className={`${inputClass} py-1.5 text-sm`}
         />
-        <Button type="submit" size="sm" variant="secondary" disabled={!text.trim()}>
+        <Button type="button" size="sm" variant="secondary" disabled={!text.trim()} onClick={add}>
           Add
         </Button>
-      </form>
+      </div>
       {!compact && done.length > 0 && (
         <Button size="sm" variant="ghost" className="mt-1" onClick={clearDone}>
           Clear {done.length} done

@@ -288,3 +288,27 @@ body {
 .gd-drift {
   animation: gd-drift 30s linear infinite alternate;
 }
+
+@keyframes gd-rain {
+  0% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(12px);
+  }
+}
+.gd-rain {
+  animation: gd-rain 0.7s linear infinite;
+}
+@keyframes gd-visitor {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+.gd-visitor {
+  animation: gd-visitor 2.2s ease-in-out infinite;
+}
