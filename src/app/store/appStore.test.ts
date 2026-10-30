@@ -6,6 +6,7 @@ function mockPersistence(): Persistence {
     putSession: vi.fn(async () => {}),
     putPlant: vi.fn(async () => {}),
     putPlants: vi.fn(async () => {}),
+    deletePlant: vi.fn(async () => {}),
     putTag: vi.fn(async () => {}),
     deleteTag: vi.fn(async () => {}),
     putDecoration: vi.fn(async () => {}),
@@ -103,6 +104,62 @@ describe('app store', () => {
     expect(useAppStore.getState().sessions[0].tagId).toBeNull();
     expect(useAppStore.getState().settings.defaultTagId).toBeNull();
     expect(useAppStore.getState().tags.find((t) => t.id === tag.id)).toBeUndefined();
+  });
+
+  it('composts wilted plants but keeps their sessions', () => {
+    const s = useAppStore.getState();
+    const mk = (id: string, wilted: boolean) => ({
+      id,
+      sessionId: id,
+      speciesId: 'daisy',
+      variant: 'standard' as const,
+      biome: 'meadow' as const,
+      wilted,
+      grownAt: '',
+      tile: null,
+    });
+    s.recordSession(
+      {
+        id: 'a',
+        startedAt: '',
+        endedAt: '',
+        plannedMinutes: 25,
+        actualMinutes: 5,
+        mode: 'countdown',
+        strictness: 'standard',
+        speciesId: 'daisy',
+        tagId: null,
+        outcome: 'wilted',
+        note: '',
+        dewEarned: 0,
+        round: null,
+      },
+      mk('a', true),
+    );
+    s.recordSession(
+      {
+        id: 'b',
+        startedAt: '',
+        endedAt: '',
+        plannedMinutes: 25,
+        actualMinutes: 25,
+        mode: 'countdown',
+        strictness: 'standard',
+        speciesId: 'daisy',
+        tagId: null,
+        outcome: 'completed',
+        note: '',
+        dewEarned: 25,
+        round: null,
+      },
+      mk('b', false),
+    );
+    expect(useAppStore.getState().removeWiltedPlants()).toBe(1);
+    expect(useAppStore.getState().plants.map((p) => p.id)).toEqual(['b']);
+    expect(useAppStore.getState().sessions).toHaveLength(2);
+    useAppStore.getState().removePlant('b');
+    expect(useAppStore.getState().plants).toEqual([]);
+    expect(p.deletePlant).toHaveBeenCalledTimes(2);
   });
 
   it('places decorations only when one is owned and unplaced', () => {

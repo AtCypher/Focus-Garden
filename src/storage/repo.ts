@@ -71,6 +71,9 @@ export const idbPersistence: Persistence = {
     const tx = (await getDB()).transaction('plants', 'readwrite');
     await Promise.all([...list.map((p) => tx.store.put(p)), tx.done]);
   },
+  async deletePlant(id) {
+    await (await getDB()).delete('plants', id);
+  },
   async putTag(t) {
     await (await getDB()).put('tags', t);
   },

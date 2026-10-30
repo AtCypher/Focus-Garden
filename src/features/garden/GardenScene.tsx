@@ -227,8 +227,6 @@ export function GardenScene({
           const r = restoration[biome] ?? 0;
           const top = mix(GREY.top, ground.top, r);
           const side = mix(GREY.side, ground.side, r);
-          const free = !layout.occupied.has(tileKey(tile));
-          const target = arranging && free && interactive;
           const hw = TILE_W / 2;
           const hh = TILE_H / 2;
           const diamond = `M${x} ${y - hh} L${x + hw} ${y} L${x} ${y + hh} L${x - hw} ${y} Z`;
@@ -246,30 +244,7 @@ export function GardenScene({
                   fill={mix(side, '#000', 0.15)}
                 />
               )}
-              <path
-                d={diamond}
-                fill={top}
-                stroke={mix(top, '#000', 0.08)}
-                strokeWidth="1"
-                className={target ? 'cursor-pointer' : undefined}
-                role={target ? 'button' : undefined}
-                tabIndex={target ? 0 : undefined}
-                aria-label={
-                  target ? `Empty ${biome} tile ${tile.col + 1}, ${tile.row + 1}` : undefined
-                }
-                onClick={target ? () => onSelectTile?.(tile) : undefined}
-                onKeyDown={
-                  target
-                    ? (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onSelectTile?.(tile);
-                        }
-                      }
-                    : undefined
-                }
-              />
-              {target && <circle cx={x} cy={y} r="5" fill="#3ea6cd" opacity="0.8" />}
+              <path d={diamond} fill={top} stroke={mix(top, '#000', 0.08)} strokeWidth="1" />
               {level.features.includes('grass') && r >= 0.5 && (
                 <path
                   d={`M${x - 12} ${y + 4} l2 -6 l2 6 M${x + 10} ${y - 3} l2 -6 l2 6`}
@@ -302,6 +277,38 @@ export function GardenScene({
         );
       })}
       <SceneryFront features={level.features} box={bounds} night={night} />
+      {arranging && interactive && (
+        // Drawn after the plants so a free tile can be tapped even when a canopy in front overlaps it.
+        <g aria-label="Free tiles">
+          {tiles
+            .filter(({ tile }) => !layout.occupied.has(tileKey(tile)))
+            .map(({ tile, biome, x, y }) => {
+              const hw = TILE_W / 2;
+              const hh = TILE_H / 2;
+              return (
+                <path
+                  key={`t-${tileKey(tile)}`}
+                  d={`M${x} ${y - hh} L${x + hw} ${y} L${x} ${y + hh} L${x - hw} ${y} Z`}
+                  fill="#3ea6cd"
+                  fillOpacity="0.28"
+                  stroke="#3ea6cd"
+                  strokeWidth="1.5"
+                  className="cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Empty ${biome} tile ${tile.col + 1}, ${tile.row + 1}`}
+                  onClick={() => onSelectTile?.(tile)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectTile?.(tile);
+                    }
+                  }}
+                />
+              );
+            })}
+        </g>
+      )}
       {weather === 'rain' && (
         <g
           stroke="#7fc3e0"

@@ -45,6 +45,7 @@ export interface Persistence {
   putSession(s: Session): Promise<void>;
   putPlant(p: Plant): Promise<void>;
   putPlants(p: Plant[]): Promise<void>;
+  deletePlant(id: string): Promise<void>;
   putTag(t: Tag): Promise<void>;
   deleteTag(id: string): Promise<void>;
   putDecoration(d: Decoration): Promise<void>;
@@ -64,6 +65,7 @@ const noopPersistence: Persistence = {
   putSession: async () => {},
   putPlant: async () => {},
   putPlants: async () => {},
+  deletePlant: async () => {},
   putTag: async () => {},
   deleteTag: async () => {},
   putDecoration: async () => {},
@@ -105,6 +107,9 @@ export interface AppState extends AppData {
   moveDecoration(id: string, tile: TilePosition): void;
   removeDecoration(id: string): void;
   movePlant(id: string, tile: TilePosition | null): void;
+  /** Compost a plant: it leaves the garden; its session stays in the history. */
+  removePlant(id: string): void;
+  removeWiltedPlants(): number;
   addTag(name: string, color: string): Tag;
   updateTag(id: string, patch: Partial<Pick<Tag, 'name' | 'color'>>): void;
   deleteTag(id: string): void;
@@ -251,6 +256,18 @@ export const useAppStore = create<AppState>()((set, get) => ({
     set({ plants });
     const p = plants.find((x) => x.id === id);
     if (p) persist(persistence.putPlant(p));
+  },
+
+  removePlant(id) {
+    set({ plants: get().plants.filter((p) => p.id !== id) });
+    persist(persistence.deletePlant(id));
+  },
+
+  removeWiltedPlants() {
+    const wilted = get().plants.filter((p) => p.wilted);
+    set({ plants: get().plants.filter((p) => !p.wilted) });
+    wilted.forEach((p) => persist(persistence.deletePlant(p.id)));
+    return wilted.length;
   },
 
   addTag(name, color) {

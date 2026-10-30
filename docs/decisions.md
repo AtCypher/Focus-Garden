@@ -185,3 +185,11 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   web view below the clock, battery indicator and notch, and colours the bar from `theme-color`.
   The pages additionally pad by `env(safe-area-inset-top)` as a belt-and-braces measure, since the
   translucent style turned out to leave content under the status bar on some phones.
+- **Arrange mode is tap-to-pick-up.** Tapping a plant or decoration picks it up, a blue tile drops
+  it, a second item swaps places. While something is picked up the free tiles are drawn on top of
+  the plants so a canopy in front cannot block the tap. There is no drag, on purpose: it would fight
+  the pan gesture and be hard to do with a keyboard.
+- **Wilted plants can be composted**, one at a time from the plant details or all at once from the
+  garden. The session stays in the history and stats; only the plant leaves the garden.
+- **A visitor is guaranteed every day** once any animal is eligible, so a new garden sees its first
+  animal the day after its first plant rather than after a lucky roll.

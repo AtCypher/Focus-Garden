@@ -90,12 +90,19 @@ export function visitorsToday(
   occupied: Set<string>,
 ): Sighting[] {
   const biomes = unlockedBiomes(level.level);
+  const eligible = VISITORS.filter(
+    (v) =>
+      biomes.includes(v.biome) &&
+      (restoration[v.biome] ?? 0) >= v.minRestoration &&
+      (!v.times || v.times.includes(time)),
+  );
+  let chosen = eligible.filter((v) => hashUnit(`visit:${day}:${v.id}`) < v.chance);
+  // Someone always drops by once the garden can host anyone: pick the day's favourite.
+  if (chosen.length === 0 && eligible.length > 0) {
+    chosen = [eligible[Math.floor(hashUnit(`sure:${day}`) * eligible.length)]];
+  }
   const out: Sighting[] = [];
-  for (const v of VISITORS) {
-    if (!biomes.includes(v.biome)) continue;
-    if ((restoration[v.biome] ?? 0) < v.minRestoration) continue;
-    if (v.times && !v.times.includes(time)) continue;
-    if (hashUnit(`visit:${day}:${v.id}`) >= v.chance) continue;
+  for (const v of chosen) {
     const tiles = biomeTiles(level, v.biome);
     const free = tiles.filter((t) => !occupied.has(`${t.col},${t.row}`));
     const pick = (free.length ? free : tiles)[

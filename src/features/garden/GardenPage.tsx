@@ -5,6 +5,7 @@ import { DECORATION_INFO } from '@/data/decorations';
 import { useAppStore } from '@/app/store/appStore';
 import { SegmentedControl } from '@/app/ui/SegmentedControl';
 import { Button } from '@/app/ui/Button';
+import { ConfirmDialog } from '@/app/ui/Dialog';
 import { BIOME_BY_ID } from '@/data/biomes';
 import { nextGardenLevel, levelProgress } from '@/data/gardenLevels';
 import { formatHours } from '@/lib/dates';
@@ -32,6 +33,9 @@ export function GardenPage() {
   const [moving, setMoving] = useState<string | null>(null);
   const seasons = useAppStore((s) => s.settings.seasons);
   const movePlant = useAppStore((s) => s.movePlant);
+  const removePlant = useAppStore((s) => s.removePlant);
+  const removeWiltedPlants = useAppStore((s) => s.removeWiltedPlants);
+  const [composting, setComposting] = useState<'one' | 'all' | null>(null);
   const moveDecoration = useAppStore((s) => s.moveDecoration);
   const placeDecoration = useAppStore((s) => s.placeDecoration);
   const removeDecoration = useAppStore((s) => s.removeDecoration);
@@ -129,6 +133,7 @@ export function GardenPage() {
     if (placing) {
       placeDecoration(placing, tile);
       setPlacing(null);
+      showToast('Placed. Tap another empty tile to move it again, or Done arranging.');
       return;
     }
     if (!moving) return;
@@ -136,6 +141,41 @@ export function GardenPage() {
     else moveDecoration(moving, tile);
     setMoving(null);
     setSelected(null);
+    showToast('Moved.');
+  };
+
+  /** In arrange mode a tap on a plant or decoration picks it up; a second item swaps places. */
+  const onPick = (id: string) => {
+    if (!arranging) {
+      setSelected((cur) => (cur === id ? null : id));
+      return;
+    }
+    setPlacing(null);
+    if (moving && moving !== id) {
+      const a = layout.placed.find((p) => p.plant.id === moving);
+      const b = layout.placed.find((p) => p.plant.id === id);
+      const da = layout.decorations.find((d) => d.id === moving);
+      const db = layout.decorations.find((d) => d.id === id);
+      const tileA = a?.tile ?? da?.tile;
+      const tileB = b?.tile ?? db?.tile;
+      if (tileA && tileB) {
+        if (a) movePlant(moving, tileB);
+        else moveDecoration(moving, tileB);
+        if (b) movePlant(id, tileA);
+        else moveDecoration(id, tileA);
+        showToast('Swapped.');
+      }
+      setMoving(null);
+      setSelected(null);
+      return;
+    }
+    if (moving === id) {
+      setMoving(null);
+      setSelected(null);
+      return;
+    }
+    setMoving(id);
+    setSelected(id);
   };
 
   return (
@@ -196,8 +236,8 @@ export function GardenPage() {
           weather={weather}
           selectedId={selected}
           arranging={arranging && (moving !== null || placing !== null)}
-          onSelectPlant={(id) => setSelected((cur) => (cur === id ? null : id))}
-          onSelectDecoration={(id) => setSelected((cur) => (cur === id ? null : id))}
+          onSelectPlant={onPick}
+          onSelectDecoration={onPick}
           onSelectTile={onTile}
         />
       </PanZoom>
@@ -220,7 +260,12 @@ export function GardenPage() {
             </>
           )}
         </p>
-        <span className="flex gap-2">
+        <span className="flex flex-wrap gap-2">
+          {plants.some((p) => p.wilted) && (
+            <Button size="sm" variant="danger" onClick={() => setComposting('all')}>
+              Compost wilted ({plants.filter((p) => p.wilted).length})
+            </Button>
+          )}
           {level.features.includes('ambient') && AmbientPlayer.supported() && (
             <Button
               size="sm"
@@ -267,8 +312,8 @@ export function GardenPage() {
             {placing
               ? `Tap an empty tile to place the ${DECORATION_INFO[placing].name.toLowerCase()}.`
               : moving
-                ? 'Now tap an empty tile in the same biome to move it there.'
-                : 'Tap a plant or decoration, then "Move". Or place something you own:'}
+                ? 'Picked up. Tap a blue tile to move it there, or tap another plant to swap places.'
+                : 'Tap a plant or decoration to pick it up. Blue tiles are free. Or place something you own:'}
           </p>
           {inventory.length > 0 ? (
             <div className="flex flex-wrap gap-2" role="group" aria-label="Decorations to place">
@@ -304,6 +349,7 @@ export function GardenPage() {
           plant={selectedPlant}
           onClose={() => setSelected(null)}
           onMove={arranging ? () => setMoving(selectedPlant.id) : undefined}
+          onCompost={() => setComposting('one')}
         />
       )}
       {selected && !selectedPlant && arranging && (
@@ -326,6 +372,30 @@ export function GardenPage() {
           </span>
         </div>
       )}
+
+      <ConfirmDialog
+        open={composting !== null}
+        title={
+          composting === 'all' ? 'Compost all wilted plants?' : 'Remove this plant from the garden?'
+        }
+        confirmLabel={composting === 'all' ? 'Compost them' : 'Remove'}
+        danger
+        onCancel={() => setComposting(null)}
+        onConfirm={() => {
+          if (composting === 'all') {
+            const n = removeWiltedPlants();
+            showToast(`${n} wilted plant${n === 1 ? '' : 's'} composted.`);
+          } else if (selectedPlant) {
+            removePlant(selectedPlant.id);
+            showToast('Removed from the garden.');
+          }
+          setComposting(null);
+          setSelected(null);
+        }}
+      >
+        The session stays in your history and stats; only the plant leaves the garden. This cannot
+        be undone.
+      </ConfirmDialog>
 
       <ul className="flex flex-wrap gap-2" aria-label="Biomes">
         {regions.map((r) => {

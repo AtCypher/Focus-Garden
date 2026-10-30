@@ -13,9 +13,10 @@ interface Props {
   plant: Plant;
   onClose: () => void;
   onMove?: () => void;
+  onCompost?: () => void;
 }
 
-export function PlantDetail({ plant, onClose, onMove }: Props) {
+export function PlantDetail({ plant, onClose, onMove, onCompost }: Props) {
   const session = useAppStore((s) => s.sessions.find((x) => x.id === plant.sessionId));
   const tag = useAppStore((s) => s.tags.find((t) => t.id === session?.tagId));
   const updateNote = useAppStore((s) => s.updateSessionNote);
@@ -90,11 +91,18 @@ export function PlantDetail({ plant, onClose, onMove }: Props) {
             />
           </label>
         )}
-        {onMove && (
-          <Button size="sm" variant="secondary" className="mt-2" onClick={onMove}>
-            Move
-          </Button>
-        )}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {onMove && (
+            <Button size="sm" variant="secondary" onClick={onMove}>
+              Move
+            </Button>
+          )}
+          {onCompost && (
+            <Button size="sm" variant="danger" onClick={onCompost}>
+              {plant.wilted ? 'Compost this wilted plant' : 'Remove from garden'}
+            </Button>
+          )}
+        </div>
       </div>
     </aside>
   );
