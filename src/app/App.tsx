@@ -14,6 +14,7 @@ import { grantEarnedSpecies } from '@/features/collection/grant';
 import { countEventSession, rollFind } from '@/features/collection/rituals';
 import { DECORATION_INFO } from '@/data/decorations';
 import { updateProgress } from '@/features/stats/progress';
+import { startUpdates } from './updates';
 
 function useBoot() {
   useTheme();
@@ -29,6 +30,7 @@ function useBoot() {
         useAppStore.getState().hydrate({});
       });
     const stopController = startSessionController();
+    const stopUpdates = startUpdates();
     const offFinish = onSessionFinished((state) => {
       const app = useAppStore.getState();
       const before = getGardenLevel(totalFocusMinutes(app.sessions)).level;
@@ -71,6 +73,7 @@ function useBoot() {
     return () => {
       offFinish();
       stopController();
+      stopUpdates();
     };
   }, []);
 }

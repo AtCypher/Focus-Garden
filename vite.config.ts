@@ -40,7 +40,8 @@ export default defineConfig({
     tailwindcss(),
     spaFallback(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: null,
       includeAssets: ['icons/favicon.ico', 'icons/apple-touch-icon-180x180.png', 'icons/*.svg'],
       manifest: {
         name: 'Grove: focus timer',

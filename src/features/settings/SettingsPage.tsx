@@ -13,6 +13,8 @@ import type { AmbientSound, ThemePreference } from '@/types';
 import { companionLevel, COMPANION_LEVELS } from '@/features/collection/rituals';
 import { totalFocusMinutes } from '@/features/garden/layout';
 import { Companion } from '@/art/Companion';
+import { checkForUpdates } from '@/app/updates';
+import { useUiStore } from '@/app/store/uiStore';
 import { formatHours } from '@/lib/dates';
 import { AMBIENT_OPTIONS, AmbientPlayer } from '@/features/timer/audio';
 
@@ -20,6 +22,8 @@ export function SettingsPage() {
   const settings = useAppStore((s) => s.settings);
   const update = useAppStore((s) => s.updateSettings);
   const [perm, setPerm] = useState(notificationPermission());
+  const showToast = useUiStore((s) => s.showToast);
+  const [checking, setChecking] = useState(false);
   const totalMinutes = useAppStore((s) => totalFocusMinutes(s.sessions));
   const pip = companionLevel(totalMinutes);
   const nextPip = COMPANION_LEVELS.find((l) => l.level === pip.level + 1);
@@ -312,7 +316,30 @@ export function SettingsPage() {
           you export it. A web app cannot block other apps; instead Grove notices when you leave and
           gives you a short grace period.
         </p>
-        <p className="text-muted text-xs">Version {__APP_VERSION__}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-muted text-xs">Version {__APP_VERSION__}</p>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={checking}
+            onClick={() => {
+              setChecking(true);
+              void checkForUpdates()
+                .then((r) =>
+                  showToast(
+                    r === 'updated'
+                      ? 'Update found, reloading…'
+                      : r === 'latest'
+                        ? 'You have the latest version.'
+                        : 'Updates are handled by the browser here.',
+                  ),
+                )
+                .finally(() => setChecking(false));
+            }}
+          >
+            {checking ? 'Checking…' : 'Check for updates'}
+          </Button>
+        </div>
       </Section>
     </div>
   );

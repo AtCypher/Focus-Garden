@@ -21,8 +21,8 @@ export function applyAppBadge(show: boolean): void {
     clearAppBadge?: () => Promise<void>;
   };
   try {
-    if (show) void nav.setAppBadge?.(1);
-    else void nav.clearAppBadge?.();
+    const p = show ? nav.setAppBadge?.(1) : nav.clearAppBadge?.();
+    p?.catch(() => {});
   } catch {
     /* unsupported */
   }

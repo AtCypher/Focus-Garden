@@ -193,3 +193,9 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   garden. The session stays in the history and stats; only the plant leaves the garden.
 - **A visitor is guaranteed every day** once any animal is eligible, so a new garden sees its first
   animal the day after its first plant rather than after a lucky roll.
+- **The app updates itself.** Workbox serves the cached shell on every launch, so a deploy used to
+  appear only on the second open, which made every fix look broken on the phone. The service worker
+  is now registered in `prompt` mode from `src/app/updates.ts`: a new worker is applied and the page
+  reloaded as soon as nothing is running (no session, break or result screen), the registration is
+  re-checked whenever the app becomes visible and hourly, and Settings has a "Check for updates"
+  button next to the version number.
