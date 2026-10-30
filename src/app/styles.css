@@ -74,6 +74,13 @@ body,
   height: 100%;
 }
 
+/* Installed on a phone: never let the first content line sit under the status bar or notch. */
+@media (display-mode: standalone) {
+  #root {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
 body {
   margin: 0;
   background: var(--bg);
