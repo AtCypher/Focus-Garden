@@ -45,6 +45,7 @@ export function Onboarding() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-moss-50 p-4 dark:bg-moss-950"
+      style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="onb-title"

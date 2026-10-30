@@ -24,7 +24,10 @@ export function AppLayout() {
       <nav
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-moss-100 bg-white/95 backdrop-blur-sm dark:border-moss-800 dark:bg-moss-950/95 md:static md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-transparent md:p-4 md:dark:bg-transparent"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        }}
       >
         <div className="hidden items-center gap-2 px-2 pt-2 pb-6 md:flex">
           <img
@@ -59,7 +62,12 @@ export function AppLayout() {
           ))}
         </ul>
       </nav>
-      <main id="main" className="flex-1 pb-24 md:pb-0" tabIndex={-1}>
+      <main
+        id="main"
+        className="flex-1 pb-24 md:pb-0"
+        tabIndex={-1}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
         <Outlet />
       </main>
       <LevelUpDialog />

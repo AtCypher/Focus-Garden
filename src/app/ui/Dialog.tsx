@@ -44,6 +44,7 @@ export function ConfirmDialog({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
       role="presentation"
     >
       <div

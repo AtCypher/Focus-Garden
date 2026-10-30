@@ -181,3 +181,6 @@ Choices made where the brief was ambiguous or collided with a technical constrai
 - **Not possible in a web app, so not built**: Live Activities, home-screen widgets, real app
   blocking, scheduled local notifications. Focus together rooms, friends leagues and timed push
   nudges need a backend and stay in `docs/v2-social.md`.
+- **Safe areas.** The installed app uses the translucent status bar so the garden can run edge to
+  edge, so every page and overlay pads its top by `env(safe-area-inset-top)` to stay clear of the
+  notch, clock and battery indicator.

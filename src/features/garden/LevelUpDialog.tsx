@@ -35,6 +35,7 @@ export function LevelUpDialog() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
       role="presentation"
     >
       <motion.div
