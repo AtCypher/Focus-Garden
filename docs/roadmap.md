@@ -1,5 +1,8 @@
 # Roadmap ideas: making Grove more engaging
 
+> **Status (late October 2026):** items 1–15 are shipped. 16–18 need a backend (see
+> `docs/v2-social.md`), 19–22 need a native wrapper, 23 needs a charity partner.
+
 Written October 2026 after looking at what Forest, Flora, Focus Plant, Focus Friend, Finch,
 Habitica and Opal do well, what their users complain about, and what a web app can and cannot do.
 

@@ -71,7 +71,8 @@ function SpeciesTab() {
   return (
     <div className="flex flex-col gap-5">
       <p className="text-muted text-sm">
-        {owned} of {SPECIES.length} species collected.
+        {owned} of {SPECIES.filter((s) => s.unlock.kind !== 'season').length} species collected,
+        plus whatever is in season.
       </p>
       {BIOMES.map((biome) => {
         const list = SPECIES.filter((s) => s.biome === biome.id);

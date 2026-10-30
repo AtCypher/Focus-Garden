@@ -28,6 +28,7 @@ export function updateProgress(now: Date = new Date(), announce = true): void {
     fresh.wallet,
     fresh.decorations,
     Math.max(fresh.streak.best, streak.display),
+    { tasks: fresh.tasks, progress: fresh.progress },
   );
   const result = evaluateAchievements(metrics, fresh.achievements, now);
   const changed =

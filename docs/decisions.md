@@ -161,3 +161,23 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   The web cannot distinguish a screen lock from an app switch, so one option covers both. It keeps
   the chosen strictness (no pausing, the dew multiplier) and only turns leaving into a reminder
   instead of a wilt. It is remembered as a default. Giving up still wilts the plant.
+
+## After launch: engagement features
+
+- **Everything rolls deterministically.** Finds, visitors and their tiles are hashed from the
+  session id or the day, so a re-render or reload never changes what the user saw, and no random
+  state needs to be stored. The only stored facts are what was collected and when.
+- **A screen lock is indistinguishable from an app switch**, so "leaving allowed" covers both.
+- **Progress lives in one kv record** (`progress`) rather than a store per feature, which keeps the
+  schema at version 2 (tasks got their own store because they are many small rows).
+- **Nested forms are invalid HTML.** The task list inside the planting form is a plain div with an
+  Enter handler; the browser would otherwise drop the inner form and "Add" would plant a seed.
+- **Seasonal species are never owned.** They are free while their season lasts and unavailable
+  afterwards, which makes them the only time-limited content and keeps the shop paywall-free.
+- **Challenges end on the first missed day**, judged the day after, and can be restarted without
+  limit. One at a time keeps the garden calm.
+- **The app badge is the closest a PWA gets to a widget** (`setAppBadge`, iOS 16.4+ installed
+  apps). It only appears after 18:00 when a streak is running and today's goal is open.
+- **Not possible in a web app, so not built**: Live Activities, home-screen widgets, real app
+  blocking, scheduled local notifications. Focus together rooms, friends leagues and timed push
+  nudges need a backend and stay in `docs/v2-social.md`.

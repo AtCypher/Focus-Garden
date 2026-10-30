@@ -1,4 +1,12 @@
-import type { AchievementProgress, Decoration, Plant, Session, Wallet } from '@/types';
+import type {
+  AchievementProgress,
+  Decoration,
+  Plant,
+  ProgressState,
+  Session,
+  Task,
+  Wallet,
+} from '@/types';
 import { ACHIEVEMENTS, type AchievementDef, type AchievementMetrics } from '@/data/achievements';
 import { getGardenLevel } from '@/data/gardenLevels';
 import { dayKey } from '@/lib/dates';
@@ -10,6 +18,7 @@ export function computeMetrics(
   wallet: Wallet,
   decorations: Decoration[],
   bestStreak: number,
+  extra: { tasks?: Task[]; progress?: ProgressState } = {},
 ): AchievementMetrics {
   const done = sessions.filter((s) => s.outcome === 'completed');
   const totalMinutes = totalFocusMinutes(sessions);
@@ -40,6 +49,11 @@ export function computeMetrics(
     tagsUsed: new Set(done.map((s) => s.tagId).filter(Boolean)).size,
     comebacks: comebackDays.size,
     biomesPlanted: new Set(alive.map((p) => p.biome)).size,
+    tasksDone: (extra.tasks ?? []).filter((t) => t.done && t.sessionId).length,
+    finds: extra.progress?.finds.length ?? 0,
+    visitors: extra.progress?.visitors.length ?? 0,
+    challengesWon: extra.progress?.challenges.filter((c) => c.completedAt).length ?? 0,
+    visitDays: extra.progress?.visitDays ?? 0,
   };
 }
 

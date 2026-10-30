@@ -29,6 +29,11 @@ export interface AchievementMetrics {
   tagsUsed: number;
   comebacks: number;
   biomesPlanted: number;
+  tasksDone: number;
+  finds: number;
+  visitors: number;
+  challengesWon: number;
+  visitDays: number;
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [

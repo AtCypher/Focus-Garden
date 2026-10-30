@@ -26,8 +26,18 @@ paywalled features. Everything stays on your device unless you export it yoursel
   session of the day. Spend it on species, decorations and companion outfits in the Seed Book.
 - **Stats**: dashboard, charts by day, tag and hour, a daily goal, streaks with earned streak
   freezes, 20 achievements and a session timeline. Tags are yours to define.
-- **Sounds**: rain, forest, café, stream and brown noise, synthesised on the device, plus a chime.
+- **Sounds**: rain, forest, café, stream, brown noise, wind and night crickets, synthesised on the
+  device and mixable two at a time, plus a chime.
 - **Light and dark themes**, reduced-motion support, keyboard access, screen-reader labels.
+- **Daily rituals and collections**: Pip greets you once a day with a little dew; after sessions
+  Pip sometimes brings back a find for the shelf; wildlife visits the garden as biomes recover and
+  fills a visitors page; four seasonal species are free in their season; four week-long seasonal
+  events earn decorations; four 7-day challenges earn species; Pip grows through seven levels.
+- **Working tools**: an intent line ("What are you working on?"), a tiny task list you tick off
+  during sessions, one-tap presets (also startable from a URL such as `?plant=25` or
+  `?plant=My%20preset` for Shortcuts and bookmarks), weekly goals per tag, a 12-week streak
+  calendar with perfect-week counts, a shareable weekly recap, a two-layer ambient sound mixer,
+  and an app-icon badge in the evening when today's goal is still open.
 - **Export and import** your data as JSON to move between devices.
 
 ## Run it locally
