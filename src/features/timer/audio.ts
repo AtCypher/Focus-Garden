@@ -306,11 +306,21 @@ const VOICES: Record<Exclude<AmbientSound, 'none'>, (ctx: Ctx, out: GainNode) =>
   night: makeNight,
 };
 
+export interface AmbientLayer {
+  sound: AmbientSound;
+  volume: number;
+}
+
+interface ActiveLayer {
+  sound: AmbientSound;
+  voice: Voice;
+  gain: GainNode;
+}
+
 export class AmbientPlayer {
   private ctx: Ctx | null = null;
   private master: GainNode | null = null;
-  private voice: Voice | null = null;
-  private current: AmbientSound = 'none';
+  private layers = new Map<number, ActiveLayer>();
 
   static supported(): boolean {
     return (
@@ -326,50 +336,65 @@ export class AmbientPlayer {
           .webkitAudioContext) as typeof AudioContext;
       this.ctx = new AC();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.5;
+      this.master.gain.value = 0.6;
       this.master.connect(this.ctx.destination);
     }
     return this.ctx;
   }
 
+  /** The sound in the first layer (for UI state). */
   get playing(): AmbientSound {
-    return this.current;
+    return this.layers.get(0)?.sound ?? 'none';
   }
 
-  /** Start (or switch to) a sound. Must be called from a user gesture the first time. */
+  /** Play a single sound (layer 0). Must be called from a user gesture the first time. */
   play(sound: AmbientSound, volume: number): void {
+    this.playMix([{ sound, volume }]);
+  }
+
+  /** Play up to two layers at once; layers set to 'none' are silenced. */
+  playMix(mix: AmbientLayer[]): void {
     const ctx = this.ensure();
     if (!ctx || !this.master) return;
     if (ctx.state === 'suspended') void ctx.resume();
-    this.setVolume(volume);
-    if (sound === this.current) return;
-    this.stopVoice();
-    this.current = sound;
-    if (sound === 'none') return;
-    this.voice = VOICES[sound](ctx, this.master);
+    mix.forEach((layer, slot) => {
+      const active = this.layers.get(slot);
+      const vol = Math.max(0, Math.min(1, layer.volume));
+      if (active && active.sound === layer.sound) {
+        active.gain.gain.setTargetAtTime(vol, ctx.currentTime, 0.1);
+        return;
+      }
+      if (active) this.stopLayer(slot);
+      if (layer.sound === 'none') return;
+      const gain = ctx.createGain();
+      gain.gain.value = vol;
+      gain.connect(this.master!);
+      this.layers.set(slot, { sound: layer.sound, voice: VOICES[layer.sound](ctx, gain), gain });
+    });
+    for (const slot of [...this.layers.keys()]) if (slot >= mix.length) this.stopLayer(slot);
+    if (this.layers.size === 0 && ctx.state === 'running') void ctx.suspend();
   }
 
   setVolume(volume: number): void {
-    if (this.master && this.ctx)
-      this.master.gain.setTargetAtTime(
-        Math.max(0, Math.min(1, volume)) * 0.6,
-        this.ctx.currentTime,
-        0.1,
-      );
+    const l = this.layers.get(0);
+    if (l && this.ctx)
+      l.gain.gain.setTargetAtTime(Math.max(0, Math.min(1, volume)), this.ctx.currentTime, 0.1);
   }
 
-  private stopVoice(): void {
+  private stopLayer(slot: number): void {
+    const l = this.layers.get(slot);
+    if (!l) return;
     try {
-      this.voice?.stop();
+      l.voice.stop();
     } catch {
       /* already stopped */
     }
-    this.voice = null;
+    l.gain.disconnect();
+    this.layers.delete(slot);
   }
 
   stop(): void {
-    this.stopVoice();
-    this.current = 'none';
+    for (const slot of [...this.layers.keys()]) this.stopLayer(slot);
     if (this.ctx && this.ctx.state === 'running') void this.ctx.suspend();
   }
 
@@ -398,3 +423,16 @@ export class AmbientPlayer {
 }
 
 export const ambient = new AmbientPlayer();
+
+/** The ambient mix described by the settings. */
+export function mixFromSettings(s: {
+  ambientSound: AmbientSound;
+  ambientVolume: number;
+  ambientSound2: AmbientSound;
+  ambientVolume2: number;
+}): AmbientLayer[] {
+  return [
+    { sound: s.ambientSound, volume: s.ambientVolume },
+    { sound: s.ambientSound2, volume: s.ambientVolume2 },
+  ];
+}

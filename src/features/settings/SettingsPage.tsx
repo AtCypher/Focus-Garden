@@ -224,6 +224,49 @@ export function SettingsPage() {
             className="w-full accent-moss-700 dark:accent-moss-400"
           />
         </Row>
+        <Row
+          label="Second sound layer"
+          hint="Mixed under the first, e.g. rain + café."
+          htmlFor="ambient2"
+        >
+          <select
+            id="ambient2"
+            className={inputClass}
+            value={settings.ambientSound2}
+            onChange={(e) => update({ ambientSound2: e.target.value as AmbientSound })}
+            disabled={!AmbientPlayer.supported()}
+          >
+            {AMBIENT_OPTIONS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row label="Second layer volume" htmlFor="volume2">
+          <input
+            id="volume2"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={settings.ambientVolume2}
+            onChange={(e) => update({ ambientVolume2: Number(e.target.value) })}
+            className="w-full accent-moss-700 dark:accent-moss-400"
+          />
+        </Row>
+        <Row
+          label="Streak badge on the app icon"
+          hint="In the evening, if today's goal is not met yet. Installed app only."
+          htmlFor="badge"
+        >
+          <Toggle
+            id="badge"
+            checked={settings.streakBadge}
+            onChange={(v) => update({ streakBadge: v })}
+            label="Streak badge on the app icon"
+          />
+        </Row>
         <Row label="Completion chime" htmlFor="chime">
           <Toggle
             id="chime"

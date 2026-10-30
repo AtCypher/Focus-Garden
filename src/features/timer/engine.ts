@@ -30,6 +30,10 @@ export interface EngineConfig {
   tagId: string | null;
   /** Pomodoro round number (1-based) or null. */
   round: number | null;
+  /** Id the resulting Session record will carry; known from the start so tasks can link to it. */
+  sessionId?: string;
+  /** What the user said they would work on. */
+  note?: string;
   /** Milliseconds per logical minute. 60_000 normally; 1_000 under the dev speed flag. */
   minuteMs: number;
 }

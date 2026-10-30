@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { Strictness, TimerMode } from '@/types';
+import type { Preset, Strictness, TimerMode } from '@/types';
+import { TaskList } from '@/features/tasks/TaskList';
+import { inputClass } from '@/app/ui/Field';
+import { newId } from '@/lib/id';
+import { IconClose } from '@/app/ui/icons';
 import { useAppStore } from '@/app/store/appStore';
 import { Button } from '@/app/ui/Button';
 import { SegmentedControl } from '@/app/ui/SegmentedControl';
@@ -54,6 +58,12 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
       : wallet.ownedSpeciesIds[0],
   );
   const [tagId, setTagId] = useState<string | null>(settings.defaultTagId);
+  const [note, setNote] = useState('');
+  const presets = useAppStore((s) => s.progress.presets);
+  const updateProgress = useAppStore((s) => s.updateProgress);
+  const [savingPreset, setSavingPreset] = useState(false);
+  const [presetName, setPresetName] = useState('');
+  const [managePresets, setManagePresets] = useState(false);
 
   const owned = useMemo(
     () => plantableSpecies(unlockContext(sessions, wallet, bestStreak)),
@@ -79,6 +89,39 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
       tagId,
       pomodoro: settings.pomodoro,
       round: 1,
+      note,
+    });
+  };
+
+  const savePreset = () => {
+    const name = presetName.trim() || `${minutes} min ${selected.name}`;
+    const preset: Preset = {
+      id: newId(),
+      name,
+      mode,
+      minutes,
+      strictness,
+      allowLeaving,
+      speciesId: selected.id,
+      tagId,
+    };
+    updateProgress((p) => ({ presets: [...p.presets, preset].slice(0, 8) }));
+    setSavingPreset(false);
+    setPresetName('');
+  };
+
+  const runPreset = (preset: Preset) => {
+    const species = owned.find((s) => s.id === preset.speciesId) ?? selected;
+    onPlant({
+      mode: preset.mode,
+      minutes: preset.minutes,
+      strictness: preset.strictness,
+      allowLeaving: preset.allowLeaving,
+      speciesId: species.id,
+      tagId: tags.some((t) => t.id === preset.tagId) ? preset.tagId : null,
+      pomodoro: settings.pomodoro,
+      round: 1,
+      note,
     });
   };
 
@@ -101,7 +144,57 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
         <p className="text-muted mt-1 text-sm">Stay with it and it grows. Leave and it may wilt.</p>
       </header>
 
+      {presets.length > 0 && (
+        <section aria-label="Quick plant" className="flex flex-wrap items-center gap-2">
+          {presets.map((p) => (
+            <span key={p.id} className="inline-flex items-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => runPreset(p)}
+                className={managePresets ? 'rounded-r-none' : ''}
+              >
+                {p.name}
+              </Button>
+              {managePresets && (
+                <button
+                  type="button"
+                  aria-label={`Delete preset ${p.name}`}
+                  onClick={() =>
+                    updateProgress((pr) => ({ presets: pr.presets.filter((x) => x.id !== p.id) }))
+                  }
+                  className="focus-ring flex h-9 items-center rounded-r-full bg-soil-100 px-2 text-soil-800 dark:bg-soil-900 dark:text-soil-100"
+                >
+                  <IconClose width={14} height={14} />
+                </button>
+              )}
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => setManagePresets((m) => !m)}
+            className="focus-ring text-muted text-xs underline"
+          >
+            {managePresets ? 'Done' : 'Edit'}
+          </button>
+        </section>
+      )}
+
       <SegmentedControl label="Timer mode" options={MODES} value={mode} onChange={setMode} />
+
+      <section className="card p-4">
+        <label htmlFor="intent" className="text-sm font-medium">
+          What are you working on? <span className="text-muted font-normal">(optional)</span>
+        </label>
+        <input
+          id="intent"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={120}
+          placeholder="e.g. Chapter 3 notes"
+          className={`${inputClass} mt-1`}
+        />
+      </section>
 
       <section aria-label="Species" className="card p-4">
         <div className="flex items-center gap-4">
@@ -196,9 +289,39 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
         </select>
       </section>
 
+      <section className="card p-4">
+        <h2 className="text-sm font-medium">Tasks</h2>
+        <p className="text-muted text-xs">Tick them off during the session.</p>
+        <TaskList sessionId={null} className="mt-2" />
+      </section>
+
       <Button type="submit" size="lg" className="w-full">
         Plant
       </Button>
+      {savingPreset ? (
+        <div className="flex items-center gap-2">
+          <input
+            value={presetName}
+            onChange={(e) => setPresetName(e.target.value)}
+            placeholder={`${minutes} min ${selected.name}`}
+            aria-label="Preset name"
+            maxLength={24}
+            className={inputClass}
+          />
+          <Button size="sm" variant="secondary" onClick={savePreset}>
+            Save
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSavingPreset(false)}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        presets.length < 8 && (
+          <Button variant="ghost" size="sm" onClick={() => setSavingPreset(true)}>
+            Save these settings as a one-tap preset
+          </Button>
+        )
+      )}
     </form>
   );
 }

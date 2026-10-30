@@ -4,6 +4,7 @@ import { useUiStore } from '@/app/store/uiStore';
 import { evaluateStreak } from './streaks';
 import { computeMetrics, evaluateAchievements } from './achievements';
 import { pickMessage } from '@/features/companion/messages';
+import { applyAppBadge, shouldShowBadge } from './badge';
 
 export function updateProgress(now: Date = new Date(), announce = true): void {
   const app = useAppStore.getState();
@@ -33,6 +34,15 @@ export function updateProgress(now: Date = new Date(), announce = true): void {
       (p, i) => fresh.achievements[i]?.value !== p.value || fresh.achievements[i]?.id !== p.id,
     );
   if (changed) fresh.setAchievements(result.list);
+
+  applyAppBadge(
+    shouldShowBadge({
+      enabled: fresh.settings.streakBadge,
+      hour: now.getHours(),
+      todayMet: streak.todayMet,
+      streak: streak.display,
+    }),
+  );
 
   if (!announce) return;
   const toast = useUiStore.getState().showToast;

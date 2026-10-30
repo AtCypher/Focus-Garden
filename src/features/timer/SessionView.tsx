@@ -19,6 +19,7 @@ import { formatDuration } from '@/lib/dates';
 import { STRICTNESS_LABELS } from './rules';
 import { IconPause, IconPlay } from '@/app/ui/icons';
 import { SoundPicker } from './SoundPicker';
+import { TaskList } from '@/features/tasks/TaskList';
 
 interface Props {
   engine: EngineState;
@@ -74,6 +75,7 @@ export function SessionView({ engine }: Props) {
         <p className="text-muted mt-0.5 text-xs" aria-live="polite">
           {statusLine}
         </p>
+        {engine.config.note && <p className="mt-1 text-sm font-medium">{engine.config.note}</p>}
         <SoundPicker className="mt-2" />
       </header>
 
@@ -102,6 +104,7 @@ export function SessionView({ engine }: Props) {
       </div>
 
       <CompanionPanel engine={engine} now={now} />
+      <TaskList sessionId={engine.config.sessionId ?? null} compact className="w-full max-w-xs" />
 
       <div className="flex w-full flex-col items-center gap-3">
         {inCancel ? (

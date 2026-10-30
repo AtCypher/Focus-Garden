@@ -42,7 +42,11 @@ export function buildRecords({ state, existingSessions, chooseTile }: RecordInpu
     strictness: state.config.strictness,
     firstSessionOfDay: isFirstSessionOfDay(existingSessions, state.finishedAt),
   });
-  const session = toSession(state, { id: newId(), dewEarned });
+  const session = toSession(state, {
+    id: state.config.sessionId ?? newId(),
+    dewEarned,
+    note: state.config.note ?? '',
+  });
 
   if (session.outcome === 'cancelled') return { session, plant: null };
 

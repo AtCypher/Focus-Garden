@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTimerStore, type PlantRequest } from './timerStore';
 import { useAppStore } from '@/app/store/appStore';
 import { SetupPanel } from './SetupPanel';
@@ -15,6 +15,38 @@ export function TimerPage() {
   const dismissResult = useTimerStore((s) => s.dismissResult);
   const lastSession = useAppStore((s) => s.sessions[s.sessions.length - 1]);
   const [suggested, setSuggested] = useState<number | undefined>(undefined);
+
+  // ?plant=<preset id|preset name|minutes> starts a session straight away (Shortcuts, bookmarks).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const want = params.get('plant');
+    if (!want) return;
+    params.delete('plant');
+    const qs = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
+    const st = useTimerStore.getState();
+    if (st.engine || st.breakState || st.result) return;
+    const app = useAppStore.getState();
+    const { settings, progress } = app;
+    const preset = progress.presets.find(
+      (p) => p.id === want || p.name.toLowerCase() === want.toLowerCase(),
+    );
+    const minutes = preset ? preset.minutes : Number(want);
+    if (!preset && !(minutes >= 10 && minutes <= 180)) return;
+    plant({
+      mode: preset?.mode ?? 'countdown',
+      minutes: Math.round(minutes / 5) * 5,
+      strictness: preset?.strictness ?? settings.defaultStrictness,
+      allowLeaving: preset?.allowLeaving ?? settings.allowLeaving,
+      speciesId:
+        preset && app.wallet.ownedSpeciesIds.includes(preset.speciesId)
+          ? preset.speciesId
+          : settings.defaultSpeciesId,
+      tagId: preset?.tagId ?? settings.defaultTagId,
+      pomodoro: settings.pomodoro,
+      round: 1,
+    });
+  }, [plant]);
 
   if (engine) return <SessionView engine={engine} />;
 

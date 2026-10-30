@@ -8,6 +8,7 @@ import type { PomodoroConfig, Strictness, TimerMode } from '@/types';
 import { reduce, start, type EngineConfig, type EngineEvent, type EngineState } from './engine';
 import { startBreak, type BreakState } from './pomodoro';
 import { resolveMinuteMs } from './speed';
+import { newId } from '@/lib/id';
 
 const SNAPSHOT_KEY = 'grove.activeSession';
 
@@ -21,6 +22,8 @@ export interface PlantRequest {
   pomodoro: PomodoroConfig;
   /** Pomodoro round to start (1-based). */
   round?: number;
+  /** Optional intent, saved as the session note. */
+  note?: string;
 }
 
 interface Snapshot {
@@ -150,6 +153,8 @@ export const useTimerStore = create<TimerState>()((set, get) => {
         speciesId: req.speciesId,
         tagId: req.tagId,
         round: req.mode === 'pomodoro' ? (req.round ?? 1) : null,
+        sessionId: newId(),
+        note: req.note?.trim() || undefined,
         minuteMs,
       };
       set({ request: req, breakState: null, result: null, now });

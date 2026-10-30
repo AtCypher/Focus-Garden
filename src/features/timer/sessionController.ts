@@ -8,7 +8,8 @@ import { useAppStore } from '@/app/store/appStore';
 import { closeNotifications, notify, vibrate, WakeLock } from './platform';
 import { RULES } from './rules';
 import { getSpecies } from '@/data/species';
-import { ambient } from './audio';
+import { ambient, mixFromSettings } from './audio';
+import { updateProgress } from '@/features/stats/progress';
 
 const GRACE_TAG = 'grove-grace';
 const DONE_TAG = 'grove-done';
@@ -65,6 +66,8 @@ export function startSessionController(): () => void {
     void closeNotifications(GRACE_TAG);
     if (st.engine) st.dispatch({ type: 'show' });
     else st.tick();
+    // A day may have passed: refresh streak state and the app badge.
+    if (useAppStore.getState().hydrated) updateProgress(new Date(), false);
     if (settings().wakeLock) void wakeLock.reacquireIfWanted();
   }
 
@@ -99,8 +102,9 @@ export function startSessionController(): () => void {
         void wakeLock.release();
       }
       if (status === 'running') {
-        const { ambientSound, ambientVolume } = settings();
-        if (ambientSound !== 'none') ambient.play(ambientSound, ambientVolume);
+        const st = settings();
+        if (st.ambientSound !== 'none' || st.ambientSound2 !== 'none')
+          ambient.playMix(mixFromSettings(st));
       } else if (status === 'paused' || status === 'idle' || status === 'break') {
         ambient.stop();
       }
@@ -130,10 +134,16 @@ export function startSessionController(): () => void {
   const unsubSettings = useAppStore.subscribe((state, prev) => {
     const a = state.settings;
     const b = prev.settings;
-    if (a.ambientSound === b.ambientSound && a.ambientVolume === b.ambientVolume) return;
+    if (
+      a.ambientSound === b.ambientSound &&
+      a.ambientVolume === b.ambientVolume &&
+      a.ambientSound2 === b.ambientSound2 &&
+      a.ambientVolume2 === b.ambientVolume2
+    )
+      return;
     if (timer.getState().engine?.status === 'running') {
-      if (a.ambientSound === 'none') ambient.stop();
-      else ambient.play(a.ambientSound, a.ambientVolume);
+      if (a.ambientSound === 'none' && a.ambientSound2 === 'none') ambient.stop();
+      else ambient.playMix(mixFromSettings(a));
     }
   });
 
