@@ -81,6 +81,10 @@ export function unlockHint(species: Species): string {
       return `Complete ${u.count} sessions.`;
     case 'gardenLevel':
       return `Grow the garden to level ${u.level}.`;
+    case 'season':
+      return `Free during ${u.season}.`;
+    case 'challenge':
+      return 'Finish the matching 7-day challenge.';
   }
 }
 

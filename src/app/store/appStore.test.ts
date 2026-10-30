@@ -14,6 +14,9 @@ function mockPersistence(): Persistence {
     putSettings: vi.fn(async () => {}),
     putAchievements: vi.fn(async () => {}),
     putStreak: vi.fn(async () => {}),
+    putTask: vi.fn(async () => {}),
+    deleteTask: vi.fn(async () => {}),
+    putProgress: vi.fn(async () => {}),
     replaceAll: vi.fn(async () => {}),
     clearAll: vi.fn(async () => {}),
   };

@@ -70,8 +70,14 @@ export interface Plant {
   tile: TilePosition | null;
 }
 
+export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+
 export type UnlockCondition =
   | { kind: 'starter' }
+  /** Free, but only plantable during this season. */
+  | { kind: 'season'; season: Season }
+  /** Granted by finishing a 7-day challenge. */
+  | { kind: 'challenge'; challengeId: string }
   | { kind: 'dew'; cost: number }
   | { kind: 'totalHours'; hours: number }
   | { kind: 'streak'; days: number }
@@ -106,6 +112,8 @@ export interface Species {
   palette: SpeciesPalette;
   /** Form-specific shape tweaks, e.g. { canopy: 'conical' }. Optional. */
   params?: Record<string, string | number>;
+  /** Seasonal species can only be planted while their season lasts. */
+  season?: Season;
 }
 
 export interface Tag {
@@ -116,7 +124,18 @@ export interface Tag {
   createdAt: ISODate;
 }
 
-export type DecorationKind = 'bench' | 'lantern' | 'path' | 'fence' | 'rock' | 'shed' | 'birdbath';
+export type DecorationKind =
+  | 'bench'
+  | 'lantern'
+  | 'path'
+  | 'fence'
+  | 'rock'
+  | 'shed'
+  | 'birdbath'
+  | 'pumpkin'
+  | 'snowman'
+  | 'maypole'
+  | 'bonfire';
 
 export interface Decoration {
   id: string;
@@ -138,7 +157,8 @@ export interface Wallet {
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
-export type AmbientSound = 'none' | 'rain' | 'forest' | 'cafe' | 'stream' | 'brown';
+export type AmbientSound =
+  'none' | 'rain' | 'forest' | 'cafe' | 'stream' | 'brown' | 'wind' | 'night';
 
 export interface Settings {
   companionName: string;
@@ -156,6 +176,11 @@ export interface Settings {
   seasons: boolean;
   ambientSound: AmbientSound;
   ambientVolume: number;
+  /** Optional second ambient layer. */
+  ambientSound2: AmbientSound;
+  ambientVolume2: number;
+  /** Show a badge on the installed app icon in the evening when today's goal is not met. */
+  streakBadge: boolean;
   chime: boolean;
   haptics: boolean;
   wakeLock: boolean;
@@ -180,6 +205,57 @@ export interface StreakState {
   lastEvaluated: DayKey | null;
 }
 
+/** A to-do item. Ticked during sessions. */
+export interface Task {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: ISODate;
+  doneAt: ISODate | null;
+  /** Session during which it was ticked off, if any. */
+  sessionId: string | null;
+}
+
+/** A saved planting configuration. */
+export interface Preset {
+  id: string;
+  name: string;
+  mode: TimerMode;
+  minutes: number;
+  strictness: Strictness;
+  allowLeaving: boolean;
+  speciesId: string;
+  tagId: string | null;
+}
+
+export interface ChallengeProgress {
+  id: string;
+  /** Local day the challenge started. */
+  startedDay: DayKey;
+  completedAt: ISODate | null;
+  /** Day keys that satisfied the challenge rule. */
+  metDays: DayKey[];
+  failedAt: ISODate | null;
+}
+
+/** Collections and daily rituals: finds, visitors, presets, challenges, goals. One kv record. */
+export interface ProgressState {
+  lastVisitDay: DayKey | null;
+  visitDays: number;
+  finds: { id: string; foundAt: ISODate }[];
+  visitors: { id: string; firstSeenAt: ISODate; sightings: number }[];
+  presets: Preset[];
+  challenges: ChallengeProgress[];
+  /** Week keys (Monday day key) whose recap has been dismissed. */
+  recapsSeen: DayKey[];
+  /** Minutes per week per tag id. */
+  tagGoals: Record<string, number>;
+  /** Event ids whose reward was granted, with the year. */
+  eventsClaimed: string[];
+  /** Sessions completed per event id for the current year ("id:year" -> count). */
+  eventSessions: Record<string, number>;
+}
+
 /** Shape of the exported JSON file. */
 export interface ExportFile {
   app: 'grove';
@@ -193,4 +269,7 @@ export interface ExportFile {
   settings: Settings;
   achievements: AchievementProgress[];
   streak: StreakState;
+  /** Added in schema 2; older files import without them. */
+  tasks?: Task[];
+  progress?: ProgressState;
 }

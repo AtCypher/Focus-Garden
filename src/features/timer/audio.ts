@@ -11,6 +11,8 @@ export const AMBIENT_OPTIONS: { id: AmbientSound; name: string }[] = [
   { id: 'cafe', name: 'Café' },
   { id: 'stream', name: 'Stream' },
   { id: 'brown', name: 'Brown noise' },
+  { id: 'wind', name: 'Wind' },
+  { id: 'night', name: 'Night crickets' },
 ];
 
 type Ctx = AudioContext;
@@ -179,6 +181,79 @@ function makeForest(ctx: Ctx, out: GainNode): Voice {
   };
 }
 
+function makeWind(ctx: Ctx, out: GainNode): Voice {
+  const src = loopNoise(ctx, 'pink');
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 400;
+  const g = ctx.createGain();
+  g.gain.value = 0.6;
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 0.05;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 0.45;
+  lfo.connect(lfoGain).connect(g.gain);
+  const lfo2 = ctx.createOscillator();
+  lfo2.frequency.value = 0.11;
+  const lfo2Gain = ctx.createGain();
+  lfo2Gain.gain.value = 250;
+  lfo2.connect(lfo2Gain).connect(lp.frequency);
+  src.connect(lp).connect(g).connect(out);
+  src.start();
+  lfo.start();
+  lfo2.start();
+  return {
+    stop() {
+      src.stop();
+      lfo.stop();
+      lfo2.stop();
+    },
+  };
+}
+
+function makeNight(ctx: Ctx, out: GainNode): Voice {
+  // Crickets: a 4.2 kHz tone chopped at ~40 Hz in short bursts, plus a faint low bed.
+  const bed = loopNoise(ctx, 'brown');
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 200;
+  const bedGain = ctx.createGain();
+  bedGain.gain.value = 0.25;
+  bed.connect(lp).connect(bedGain).connect(out);
+  bed.start();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const chirp = () => {
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 4200 + Math.random() * 300;
+    const chop = ctx.createOscillator();
+    chop.type = 'square';
+    chop.frequency.value = 38;
+    const chopGain = ctx.createGain();
+    chopGain.gain.value = 0.5;
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(0.06, t0 + 0.05);
+    env.gain.setValueAtTime(0.06, t0 + 0.5);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.7);
+    chop.connect(chopGain).connect(env.gain);
+    osc.connect(env).connect(out);
+    osc.start(t0);
+    chop.start(t0);
+    osc.stop(t0 + 0.75);
+    chop.stop(t0 + 0.75);
+    timer = setTimeout(chirp, 900 + Math.random() * 1500);
+  };
+  chirp();
+  return {
+    stop() {
+      if (timer) clearTimeout(timer);
+      bed.stop();
+    },
+  };
+}
+
 function makeCafe(ctx: Ctx, out: GainNode): Voice {
   // Murmur: band-limited brown noise with slow amplitude wobble, plus occasional cup clinks.
   const murmur = loopNoise(ctx, 'brown');
@@ -227,6 +302,8 @@ const VOICES: Record<Exclude<AmbientSound, 'none'>, (ctx: Ctx, out: GainNode) =>
   brown: makeBrown,
   forest: makeForest,
   cafe: makeCafe,
+  wind: makeWind,
+  night: makeNight,
 };
 
 export class AmbientPlayer {

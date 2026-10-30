@@ -47,6 +47,7 @@ describe('database', () => {
       'plants',
       'sessions',
       'tags',
+      'tasks',
     ]);
     expect(MIGRATIONS).toHaveLength(DB_VERSION);
   });
@@ -112,7 +113,43 @@ describe('export / import', () => {
     expect(result.data.plants).toEqual([plant]);
     expect(result.data.wallet.dew).toBe(77);
     expect(result.data.settings).toEqual(data.settings);
-    expect(result.summary).toMatchObject({ sessions: 1, plants: 1, dew: 77, schemaVersion: 1 });
+    expect(result.summary).toMatchObject({ sessions: 1, plants: 1, dew: 77, schemaVersion: 2 });
+  });
+
+  it('imports a schema 1 file (before tasks and progress existed)', () => {
+    const data = emptyData();
+    data.sessions = [session];
+    const v1 = JSON.parse(serializeExport(data));
+    v1.schemaVersion = 1;
+    delete v1.tasks;
+    delete v1.progress;
+    const r = parseImport(JSON.stringify(v1));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.data.tasks).toEqual([]);
+      expect(r.data.progress.finds).toEqual([]);
+      expect(r.data.sessions).toHaveLength(1);
+    }
+  });
+
+  it('migrates a version 1 database by adding the tasks store', async () => {
+    // Open at v1 by hand, then let getDB upgrade it.
+    const { openDB } = await import('idb');
+    const old = await openDB('grove', 1, {
+      upgrade(db) {
+        db.createObjectStore('sessions', { keyPath: 'id' }).createIndex('byEndedAt', 'endedAt');
+        db.createObjectStore('plants', { keyPath: 'id' }).createIndex('bySession', 'sessionId');
+        db.createObjectStore('tags', { keyPath: 'id' });
+        db.createObjectStore('decorations', { keyPath: 'id' });
+        db.createObjectStore('kv');
+      },
+    });
+    await old.put('sessions', session);
+    old.close();
+    const db = await getDB();
+    expect(db.version).toBe(2);
+    expect(db.objectStoreNames.contains('tasks')).toBe(true);
+    expect((await loadAll()).sessions).toEqual([session]);
   });
 
   it('rejects junk and non-Grove files with readable errors', () => {

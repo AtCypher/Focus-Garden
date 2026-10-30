@@ -8,12 +8,15 @@ import { emptyData } from '@/app/store/appStore';
 import type { ExportFile, Plant, Session, Tag } from '@/types';
 import { SPECIES_BY_ID } from '@/data/species';
 
-export const EXPORT_SCHEMA_VERSION = 1;
+export const EXPORT_SCHEMA_VERSION = 2;
 
 type Json = Record<string, unknown>;
 
 /** Upgraders for older export files: EXPORT_MIGRATIONS[n] converts version n+1 to n+2. */
-export const EXPORT_MIGRATIONS: Array<(file: Json) => Json> = [];
+export const EXPORT_MIGRATIONS: Array<(file: Json) => Json> = [
+  // 1 -> 2: tasks and progress were added; older files simply have none.
+  (file) => ({ ...file, tasks: [], progress: null }),
+];
 
 export function buildExport(data: AppData, now = new Date()): ExportFile {
   return {
@@ -28,6 +31,8 @@ export function buildExport(data: AppData, now = new Date()): ExportFile {
     settings: data.settings,
     achievements: data.achievements,
     streak: data.streak,
+    tasks: data.tasks,
+    progress: data.progress,
   };
 }
 
@@ -183,6 +188,12 @@ export function parseImport(text: string): ImportResult {
     streak: isObj(file.streak)
       ? ({ ...defaults.streak, ...file.streak } as AppData['streak'])
       : defaults.streak,
+    tasks: Array.isArray(file.tasks)
+      ? (file.tasks as AppData['tasks']).filter((t) => isObj(t) && isStr(t.id) && isStr(t.text))
+      : [],
+    progress: isObj(file.progress)
+      ? ({ ...defaults.progress, ...file.progress } as AppData['progress'])
+      : defaults.progress,
   };
   return {
     ok: true,

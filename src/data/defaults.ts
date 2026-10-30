@@ -1,4 +1,4 @@
-import type { Settings, StreakState, Tag, Wallet } from '@/types';
+import type { ProgressState, Settings, StreakState, Tag, Wallet } from '@/types';
 import { DEFAULT_POMODORO } from '@/features/timer/pomodoro';
 import { STARTER_SPECIES_IDS } from './species';
 
@@ -17,6 +17,9 @@ export const DEFAULT_SETTINGS: Settings = {
   seasons: true,
   ambientSound: 'none',
   ambientVolume: 0.5,
+  ambientSound2: 'none',
+  ambientVolume2: 0.4,
+  streakBadge: true,
   chime: true,
   haptics: true,
   wakeLock: true,
@@ -45,3 +48,30 @@ export const DEFAULT_TAGS: Tag[] = [
   { id: 'tag-work', name: 'Work', color: '#5b8c48', createdAt: '2026-01-01T00:00:00.000Z' },
   { id: 'tag-reading', name: 'Reading', color: '#e4779f', createdAt: '2026-01-01T00:00:00.000Z' },
 ];
+
+export const DEFAULT_PROGRESS: ProgressState = {
+  lastVisitDay: null,
+  visitDays: 0,
+  finds: [],
+  visitors: [],
+  presets: [],
+  challenges: [],
+  recapsSeen: [],
+  tagGoals: {},
+  eventsClaimed: [],
+  eventSessions: {},
+};
+
+export function emptyProgress(): ProgressState {
+  return {
+    ...DEFAULT_PROGRESS,
+    finds: [],
+    visitors: [],
+    presets: [],
+    challenges: [],
+    recapsSeen: [],
+    tagGoals: {},
+    eventsClaimed: [],
+    eventSessions: {},
+  };
+}

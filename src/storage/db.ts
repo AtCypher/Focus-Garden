@@ -14,24 +14,27 @@ import type {
   AchievementProgress,
   Decoration,
   Plant,
+  ProgressState,
   Session,
   Settings,
   StreakState,
   Tag,
+  Task,
   Wallet,
 } from '@/types';
 
 export const DB_NAME = 'grove';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface GroveSchema extends DBSchema {
   sessions: { key: string; value: Session; indexes: { byEndedAt: string } };
   plants: { key: string; value: Plant; indexes: { bySession: string } };
   tags: { key: string; value: Tag };
   decorations: { key: string; value: Decoration };
+  tasks: { key: string; value: Task };
   kv: {
-    key: 'wallet' | 'settings' | 'achievements' | 'streak';
-    value: Wallet | Settings | AchievementProgress[] | StreakState;
+    key: 'wallet' | 'settings' | 'achievements' | 'streak' | 'progress';
+    value: Wallet | Settings | AchievementProgress[] | StreakState | ProgressState;
   };
 }
 
@@ -51,6 +54,10 @@ export const MIGRATIONS: Migration[] = [
     db.createObjectStore('tags', { keyPath: 'id' });
     db.createObjectStore('decorations', { keyPath: 'id' });
     db.createObjectStore('kv');
+  },
+  // v2: tasks (ticked off during sessions). Progress lives in kv and needs no store.
+  (db) => {
+    db.createObjectStore('tasks', { keyPath: 'id' });
   },
 ];
 

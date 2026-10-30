@@ -9,14 +9,22 @@ import type {
   Decoration,
   DecorationKind,
   Plant,
+  ProgressState,
   Session,
   Settings,
   StreakState,
   Tag,
+  Task,
   TilePosition,
   Wallet,
 } from '@/types';
-import { DEFAULT_SETTINGS, DEFAULT_STREAK, DEFAULT_TAGS, DEFAULT_WALLET } from '@/data/defaults';
+import {
+  DEFAULT_SETTINGS,
+  DEFAULT_STREAK,
+  DEFAULT_TAGS,
+  DEFAULT_WALLET,
+  emptyProgress,
+} from '@/data/defaults';
 import { newId } from '@/lib/id';
 
 export interface AppData {
@@ -28,6 +36,8 @@ export interface AppData {
   settings: Settings;
   achievements: AchievementProgress[];
   streak: StreakState;
+  tasks: Task[];
+  progress: ProgressState;
 }
 
 /** What the storage layer must implement. Every method may be async and fire-and-forget. */
@@ -43,6 +53,9 @@ export interface Persistence {
   putSettings(s: Settings): Promise<void>;
   putAchievements(a: AchievementProgress[]): Promise<void>;
   putStreak(s: StreakState): Promise<void>;
+  putTask(t: Task): Promise<void>;
+  deleteTask(id: string): Promise<void>;
+  putProgress(p: ProgressState): Promise<void>;
   replaceAll(data: AppData): Promise<void>;
   clearAll(): Promise<void>;
 }
@@ -59,6 +72,9 @@ const noopPersistence: Persistence = {
   putSettings: async () => {},
   putAchievements: async () => {},
   putStreak: async () => {},
+  putTask: async () => {},
+  deleteTask: async () => {},
+  putProgress: async () => {},
   replaceAll: async () => {},
   clearAll: async () => {},
 };
@@ -96,6 +112,13 @@ export interface AppState extends AppData {
   setStreak(streak: StreakState): void;
   addStreakFreeze(count: number): void;
   useStreakFreeze(): boolean;
+  addTask(text: string): Task;
+  toggleTask(id: string, sessionId: string | null): void;
+  deleteTask(id: string): void;
+  clearDoneTasks(): void;
+  updateProgress(
+    patch: Partial<ProgressState> | ((p: ProgressState) => Partial<ProgressState>),
+  ): void;
   importAll(data: AppData): void;
   resetAll(): void;
 }
@@ -114,6 +137,8 @@ export function emptyData(): AppData {
     settings: { ...DEFAULT_SETTINGS, pomodoro: { ...DEFAULT_SETTINGS.pomodoro } },
     achievements: [],
     streak: { ...DEFAULT_STREAK, frozenDays: [] },
+    tasks: [],
+    progress: emptyProgress(),
   };
 }
 
@@ -281,6 +306,54 @@ export const useAppStore = create<AppState>()((set, get) => ({
     return true;
   },
 
+  addTask(text) {
+    const task: Task = {
+      id: newId(),
+      text: text.trim(),
+      done: false,
+      createdAt: new Date().toISOString(),
+      doneAt: null,
+      sessionId: null,
+    };
+    set({ tasks: [...get().tasks, task] });
+    persist(persistence.putTask(task));
+    return task;
+  },
+
+  toggleTask(id, sessionId) {
+    const tasks = get().tasks.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            done: !t.done,
+            doneAt: t.done ? null : new Date().toISOString(),
+            sessionId: t.done ? null : sessionId,
+          }
+        : t,
+    );
+    set({ tasks });
+    const t = tasks.find((x) => x.id === id);
+    if (t) persist(persistence.putTask(t));
+  },
+
+  deleteTask(id) {
+    set({ tasks: get().tasks.filter((t) => t.id !== id) });
+    persist(persistence.deleteTask(id));
+  },
+
+  clearDoneTasks() {
+    const done = get().tasks.filter((t) => t.done);
+    set({ tasks: get().tasks.filter((t) => !t.done) });
+    done.forEach((t) => persist(persistence.deleteTask(t.id)));
+  },
+
+  updateProgress(patch) {
+    const current = get().progress;
+    const progress = { ...current, ...(typeof patch === 'function' ? patch(current) : patch) };
+    set({ progress });
+    persist(persistence.putProgress(progress));
+  },
+
   importAll(data) {
     set({ ...data, hydrated: true });
     persist(persistence.replaceAll(data));
@@ -306,5 +379,7 @@ export function selectData(state: AppState): AppData {
     settings: state.settings,
     achievements: state.achievements,
     streak: state.streak,
+    tasks: state.tasks,
+    progress: state.progress,
   };
 }

@@ -5,23 +5,35 @@
  */
 import type { AppData, Persistence } from '@/app/store/appStore';
 import { emptyData } from '@/app/store/appStore';
-import type { AchievementProgress, Settings, StreakState, Wallet } from '@/types';
+import type { AchievementProgress, ProgressState, Settings, StreakState, Wallet } from '@/types';
 import { getDB } from './db';
 
 export async function loadAll(): Promise<AppData> {
   const db = await getDB();
   const defaults = emptyData();
-  const [sessions, plants, tags, decorations, wallet, settings, achievements, streak] =
-    await Promise.all([
-      db.getAll('sessions'),
-      db.getAll('plants'),
-      db.getAll('tags'),
-      db.getAll('decorations'),
-      db.get('kv', 'wallet') as Promise<Wallet | undefined>,
-      db.get('kv', 'settings') as Promise<Settings | undefined>,
-      db.get('kv', 'achievements') as Promise<AchievementProgress[] | undefined>,
-      db.get('kv', 'streak') as Promise<StreakState | undefined>,
-    ]);
+  const [
+    sessions,
+    plants,
+    tags,
+    decorations,
+    wallet,
+    settings,
+    achievements,
+    streak,
+    tasks,
+    progress,
+  ] = await Promise.all([
+    db.getAll('sessions'),
+    db.getAll('plants'),
+    db.getAll('tags'),
+    db.getAll('decorations'),
+    db.get('kv', 'wallet') as Promise<Wallet | undefined>,
+    db.get('kv', 'settings') as Promise<Settings | undefined>,
+    db.get('kv', 'achievements') as Promise<AchievementProgress[] | undefined>,
+    db.get('kv', 'streak') as Promise<StreakState | undefined>,
+    db.getAll('tasks'),
+    db.get('kv', 'progress') as Promise<ProgressState | undefined>,
+  ]);
   // A brand-new database (nothing stored yet) is seeded with the default tags so they persist and
   // export. An existing database keeps whatever tags the user has, even none.
   const brandNew = tags.length === 0 && sessions.length === 0 && settings === undefined;
@@ -43,6 +55,8 @@ export async function loadAll(): Promise<AppData> {
     },
     achievements: achievements ?? defaults.achievements,
     streak: streak ?? defaults.streak,
+    tasks: tasks.sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    progress: { ...defaults.progress, ...(progress ?? {}) },
   };
 }
 
@@ -81,14 +95,27 @@ export const idbPersistence: Persistence = {
   async putStreak(s) {
     await (await getDB()).put('kv', s, 'streak');
   },
+  async putTask(t) {
+    await (await getDB()).put('tasks', t);
+  },
+  async deleteTask(id) {
+    await (await getDB()).delete('tasks', id);
+  },
+  async putProgress(p) {
+    await (await getDB()).put('kv', p, 'progress');
+  },
   async replaceAll(data) {
     const db = await getDB();
-    const tx = db.transaction(['sessions', 'plants', 'tags', 'decorations', 'kv'], 'readwrite');
+    const tx = db.transaction(
+      ['sessions', 'plants', 'tags', 'decorations', 'tasks', 'kv'],
+      'readwrite',
+    );
     await Promise.all([
       tx.objectStore('sessions').clear(),
       tx.objectStore('plants').clear(),
       tx.objectStore('tags').clear(),
       tx.objectStore('decorations').clear(),
+      tx.objectStore('tasks').clear(),
       tx.objectStore('kv').clear(),
     ]);
     await Promise.all([
@@ -96,21 +123,27 @@ export const idbPersistence: Persistence = {
       ...data.plants.map((p) => tx.objectStore('plants').put(p)),
       ...data.tags.map((t) => tx.objectStore('tags').put(t)),
       ...data.decorations.map((d) => tx.objectStore('decorations').put(d)),
+      ...data.tasks.map((t) => tx.objectStore('tasks').put(t)),
       tx.objectStore('kv').put(data.wallet, 'wallet'),
       tx.objectStore('kv').put(data.settings, 'settings'),
       tx.objectStore('kv').put(data.achievements, 'achievements'),
       tx.objectStore('kv').put(data.streak, 'streak'),
+      tx.objectStore('kv').put(data.progress, 'progress'),
       tx.done,
     ]);
   },
   async clearAll() {
     const db = await getDB();
-    const tx = db.transaction(['sessions', 'plants', 'tags', 'decorations', 'kv'], 'readwrite');
+    const tx = db.transaction(
+      ['sessions', 'plants', 'tags', 'decorations', 'tasks', 'kv'],
+      'readwrite',
+    );
     await Promise.all([
       tx.objectStore('sessions').clear(),
       tx.objectStore('plants').clear(),
       tx.objectStore('tags').clear(),
       tx.objectStore('decorations').clear(),
+      tx.objectStore('tasks').clear(),
       tx.objectStore('kv').clear(),
       tx.done,
     ]);
