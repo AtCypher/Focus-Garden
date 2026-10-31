@@ -16,7 +16,7 @@ test('arrange by tapping a plant then a free tile, and compost a wilted plant', 
   await page.getByRole('button', { name: 'Plant' }).click();
   await expect(page.getByRole('button', { name: 'Give up' })).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Give up' }).click();
-  await expect(page.getByText('It wilted')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'It wilted' })).toBeVisible();
   await page.getByRole('button', { name: 'Back to planting' }).click();
 
   await page.getByRole('link', { name: 'Garden' }).click();
