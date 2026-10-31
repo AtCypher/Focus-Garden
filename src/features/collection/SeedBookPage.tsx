@@ -14,6 +14,7 @@ import { PlantArt } from '@/art/PlantArt';
 import { Companion } from '@/art/Companion';
 import { DecorationArt } from '@/art/Decorations';
 import { grownCounts, speciesStatus, unlockContext } from './unlocks';
+import { speciesStats, type SpeciesStat } from './speciesStats';
 import { CollectionTab } from './CollectionTab';
 import { ChallengesTab } from './ChallengesTab';
 import { completedChallengeIds } from './rituals';
@@ -66,6 +67,7 @@ function SpeciesTab() {
     [sessions, wallet, bestStreak, progress],
   );
   const counts = useMemo(() => grownCounts(plants), [plants]);
+  const stats = useMemo(() => speciesStats(sessions), [sessions]);
   const owned = SPECIES.filter((s) => wallet.ownedSpeciesIds.includes(s.id)).length;
 
   return (
@@ -97,6 +99,7 @@ function SpeciesTab() {
                   species={s}
                   status={speciesStatus(s, ctx)}
                   grown={counts[s.id] ?? 0}
+                  stat={stats[s.id]}
                   onBuy={() => {
                     if (buySpecies(s.id, s.dewCost)) showToast(`${s.name} added to your seeds.`);
                   }}
@@ -121,11 +124,13 @@ function SpeciesCard({
   species,
   status,
   grown,
+  stat,
   onBuy,
 }: {
   species: Species;
   status: ReturnType<typeof speciesStatus>;
   grown: number;
+  stat?: SpeciesStat;
   onBuy: () => void;
 }) {
   const locked = status.kind !== 'owned' && !(status.kind === 'seasonal' && status.inSeason);
@@ -150,6 +155,18 @@ function SpeciesCard({
           <p className="text-muted mt-1 text-xs italic">{species.flavour}</p>
           <p className="text-muted mt-1 text-xs">
             Grown {grown} time{grown === 1 ? '' : 's'}
+            {stat && (
+              <>
+                <br />
+                First{' '}
+                {new Date(stat.firstGrownAt ?? '').toLocaleDateString(undefined, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: '2-digit',
+                })}{' '}
+                · best {stat.bestMinutes} min
+              </>
+            )}
           </p>
         </>
       )}

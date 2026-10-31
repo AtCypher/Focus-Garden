@@ -212,3 +212,8 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   the device's tour and onboarding state so an older backup does not replay them.
 - **Backup of the previous garden**: branch `backup/isometric-garden` on GitHub holds the last
   version before this change.
+- **Six follow-ups shipped together**: per-biome bed scenery and seasonal overlays (petals, butterflies,
+  leaves, snow) drawn in the beds; a favourite plant shown large above the beds; volume sliders on the
+  timer's sound mixer; "first grown" and "best session" on species cards; and a garden diary page
+  (`/diary`) with one entry per day, a line from Pip chosen from the day's shape (first species,
+  wilt, goal met, big day), the day's plants and notes.

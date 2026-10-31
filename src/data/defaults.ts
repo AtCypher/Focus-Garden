@@ -61,6 +61,7 @@ export const DEFAULT_PROGRESS: ProgressState = {
   challenges: [],
   recapsSeen: [],
   tagGoals: {},
+  favouritePlantId: null,
   eventsClaimed: [],
   eventSessions: {},
 };

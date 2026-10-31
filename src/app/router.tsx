@@ -5,6 +5,7 @@ import { AppLayout } from './AppLayout';
 import { TimerPage } from '@/features/timer/TimerPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 import { GardenPage } from '@/features/garden/GardenPage';
+import { DiaryPage } from '@/features/garden/DiaryPage';
 import { SeedBookPage } from '@/features/collection/SeedBookPage';
 
 const StatsPage = lazy(() =>
@@ -29,6 +30,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <TimerPage /> },
         { path: 'garden', element: <GardenPage /> },
+        { path: 'diary', element: <DiaryPage /> },
         { path: 'seeds', element: <SeedBookPage /> },
         {
           path: 'stats',

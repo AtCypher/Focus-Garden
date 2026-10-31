@@ -319,3 +319,20 @@ body {
 .gd-visitor {
   animation: gd-visitor 2.2s ease-in-out infinite;
 }
+
+@keyframes gd-fall {
+  0% {
+    transform: translate(0, -10px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-8px, 60px);
+    opacity: 0;
+  }
+}
+.gd-fall {
+  animation: gd-fall 6s linear infinite;
+}

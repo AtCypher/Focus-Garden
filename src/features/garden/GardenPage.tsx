@@ -12,6 +12,8 @@ import { formatHours } from '@/lib/dates';
 import { GardenScene } from './GardenScene';
 import { PanZoom } from './PanZoom';
 import { GardenBeds } from './GardenBeds';
+import { PlantArt } from '@/art/PlantArt';
+import { getSpecies } from '@/data/species';
 import { PlantDetail } from './PlantDetail';
 import { useGarden } from './useGarden';
 import { PERIODS, type Period } from './periods';
@@ -92,6 +94,10 @@ export function GardenPage() {
   }, [collection, visitors, today, now, updateProgress, showToast]);
   const next = nextGardenLevel(totalMinutes);
   const progress = levelProgress(totalMinutes);
+  const favourite = useMemo(
+    () => plants.find((p) => p.id === collection.favouritePlantId && !p.wilted) ?? null,
+    [plants, collection.favouritePlantId],
+  );
   const selectedPlant = useMemo(
     () => plants.find((p) => p.id === selected) ?? null,
     [plants, selected],
@@ -247,8 +253,42 @@ export function GardenPage() {
         </p>
       </div>
 
+      {view === 'beds' && favourite && (
+        <section className="card flex items-center gap-3 p-3" aria-label="Favourite plant">
+          <PlantArt
+            species={getSpecies(favourite.speciesId)}
+            growth={1}
+            variant={favourite.variant}
+            size={110}
+            seed={0.4}
+          />
+          <div className="min-w-0 flex-1 text-sm">
+            <p className="text-muted text-xs">♥ Favourite</p>
+            <p className="font-semibold">{getSpecies(favourite.speciesId).name}</p>
+            <p className="text-muted text-xs">
+              Grown{' '}
+              {new Date(favourite.grownAt).toLocaleDateString(undefined, {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+              {favourite.variant !== 'standard' ? ` · ${favourite.variant}` : ''}
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="mt-1"
+              onClick={() => setSelected(favourite.id)}
+            >
+              Details
+            </Button>
+          </div>
+        </section>
+      )}
+
       {view === 'beds' && (
         <GardenBeds
+          favouriteId={collection.favouritePlantId}
           level={level}
           plants={shown}
           decorations={layout.decorations}
@@ -304,6 +344,12 @@ export function GardenPage() {
           )}
         </p>
         <span className="flex flex-wrap gap-2">
+          <Link
+            to="/diary"
+            className="focus-ring inline-flex h-9 items-center rounded-full bg-moss-100 px-3 text-sm font-medium text-moss-900 hover:bg-moss-200 dark:bg-moss-800 dark:text-moss-100 dark:hover:bg-moss-700"
+          >
+            Diary
+          </Link>
           {plants.some((p) => p.wilted) && (
             <Button size="sm" variant="danger" onClick={() => setComposting('all')}>
               Compost wilted ({plants.filter((p) => p.wilted).length})
@@ -408,6 +454,13 @@ export function GardenPage() {
           onClose={() => setSelected(null)}
           onMove={arranging ? () => setMoving(selectedPlant.id) : undefined}
           onCompost={() => setComposting('one')}
+          favourite={collection.favouritePlantId === selectedPlant.id}
+          onToggleFavourite={() =>
+            updateProgress({
+              favouritePlantId:
+                collection.favouritePlantId === selectedPlant.id ? null : selectedPlant.id,
+            })
+          }
         />
       )}
       {selected && !selectedPlant && arranging && (

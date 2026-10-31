@@ -7,6 +7,7 @@ import { PlantArt } from '@/art/PlantArt';
 import { DecorationArt } from '@/art/Decorations';
 import { VisitorArt } from '@/art/Visitors';
 import { SceneryBack } from '@/art/Scenery';
+import { BedScenery, SeasonOverlay } from '@/art/BedScenery';
 import { mix } from '@/art/plants/common';
 import type { Sighting } from '@/features/collection/rituals';
 import { TIME_TINTS, type Season, type TimeOfDay } from './daylight';
@@ -25,6 +26,7 @@ export interface GardenBedsProps {
   arranging: boolean;
   onSelectPlant: (id: string) => void;
   onSelectDecoration: (id: string) => void;
+  favouriteId?: string | null;
 }
 
 const COLS = 5;
@@ -57,6 +59,7 @@ export function GardenBeds({
   arranging,
   onSelectPlant,
   onSelectDecoration,
+  favouriteId = null,
 }: GardenBedsProps) {
   const night = time === 'night';
   const tint = TIME_TINTS[time];
@@ -171,6 +174,13 @@ export function GardenBeds({
                 d={`M0 ${height - 64} Q${width / 2} ${height - 80} ${width} ${height - 64} L${width} ${height - 28} Q${width / 2} ${height - 12} 0 ${height - 28} Z`}
                 fill={top}
               />
+              <BedScenery
+                biome={biome.id}
+                width={width}
+                height={height}
+                night={night}
+                restoration={r}
+              />
               {level.features.includes('grass') && r >= 0.5 && (
                 <g stroke={biome.ground.grass} strokeWidth="1.5" fill="none">
                   {Array.from({ length: 12 }, (_, i) => (
@@ -232,6 +242,12 @@ export function GardenBeds({
                       />
                     )}
                     <ellipse cx={x} cy={y + 6} rx="22" ry="6" fill="#000" opacity="0.08" />
+                    {favouriteId === p.id && (
+                      <path
+                        d={`M${x + 22} ${y - size * 0.8} c-6 -8 -16 0 -8 8 l8 8 l8 -8 c8 -8 -2 -16 -8 -8 Z`}
+                        fill="#e4779f"
+                      />
+                    )}
                     <svg
                       x={x - size / 2}
                       y={y + 8 - size * 0.85}
@@ -295,6 +311,7 @@ export function GardenBeds({
                   <VisitorArt id={v.visitor.id} />
                 </g>
               ))}
+              {season && <SeasonOverlay season={season} width={width} height={height} />}
               {weather === 'sun' && (
                 <circle cx={width - 30} cy="22" r="12" fill="#ffe08a" opacity="0.8" />
               )}

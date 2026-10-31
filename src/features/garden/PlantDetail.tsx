@@ -14,9 +14,18 @@ interface Props {
   onClose: () => void;
   onMove?: () => void;
   onCompost?: () => void;
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
 }
 
-export function PlantDetail({ plant, onClose, onMove, onCompost }: Props) {
+export function PlantDetail({
+  plant,
+  onClose,
+  onMove,
+  onCompost,
+  favourite,
+  onToggleFavourite,
+}: Props) {
   const session = useAppStore((s) => s.sessions.find((x) => x.id === plant.sessionId));
   const tag = useAppStore((s) => s.tags.find((t) => t.id === session?.tagId));
   const updateNote = useAppStore((s) => s.updateSessionNote);
@@ -92,6 +101,16 @@ export function PlantDetail({ plant, onClose, onMove, onCompost }: Props) {
           </label>
         )}
         <div className="mt-2 flex flex-wrap gap-2">
+          {onToggleFavourite && !plant.wilted && (
+            <Button
+              size="sm"
+              variant={favourite ? 'primary' : 'secondary'}
+              aria-pressed={favourite}
+              onClick={onToggleFavourite}
+            >
+              {favourite ? '♥ Favourite' : '♡ Make favourite'}
+            </Button>
+          )}
           {onMove && (
             <Button size="sm" variant="secondary" onClick={onMove}>
               Move

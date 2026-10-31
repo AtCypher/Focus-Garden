@@ -256,6 +256,8 @@ export interface ProgressState {
   recapsSeen: DayKey[];
   /** Minutes per week per tag id. */
   tagGoals: Record<string, number>;
+  /** The plant shown large at the top of the garden. */
+  favouritePlantId: string | null;
   /** Event ids whose reward was granted, with the year. */
   eventsClaimed: string[];
   /** Sessions completed per event id for the current year ("id:year" -> count). */
