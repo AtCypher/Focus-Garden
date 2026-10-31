@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '@/app/store/appStore';
-import { Section, Row, Toggle, inputClass } from '@/app/ui/Field';
+import { Section, Row, Toggle, NumberField, inputClass } from '@/app/ui/Field';
 import { Button } from '@/app/ui/Button';
 import { DataSection } from './DataSection';
 import { TagsSection } from './TagsSection';
@@ -68,70 +68,61 @@ export function SettingsPage() {
       <Section title="Goals">
         <Row
           label="Daily goal"
-          hint="Minutes of completed focus per day. Streaks count days that hit the goal."
+          hint="Minutes of completed focus per day (10 to 720). Streaks count days that hit the goal."
           htmlFor="daily-goal"
         >
-          <input
+          <NumberField
             id="daily-goal"
-            type="number"
+            value={settings.dailyGoalMinutes}
             min={10}
             max={720}
+            fallback={10}
             step={5}
-            className={inputClass}
-            value={settings.dailyGoalMinutes}
-            onChange={(e) =>
-              update({
-                dailyGoalMinutes: Math.max(10, Math.min(720, Number(e.target.value) || 60)),
-              })
-            }
+            onCommit={(v) => update({ dailyGoalMinutes: v })}
           />
         </Row>
       </Section>
 
       <Section title="Pomodoro">
         <Row label="Focus (minutes)" htmlFor="pomo-focus">
-          <input
+          <NumberField
             id="pomo-focus"
-            type="number"
+            value={pomo.focusMinutes}
             min={10}
             max={90}
+            fallback={25}
             step={5}
-            className={inputClass}
-            value={pomo.focusMinutes}
-            onChange={(e) => setPomo({ focusMinutes: clamp(e.target.value, 10, 90, 25) })}
+            onCommit={(v) => setPomo({ focusMinutes: v })}
           />
         </Row>
         <Row label="Short break" htmlFor="pomo-short">
-          <input
+          <NumberField
             id="pomo-short"
-            type="number"
+            value={pomo.shortBreakMinutes}
             min={1}
             max={30}
-            className={inputClass}
-            value={pomo.shortBreakMinutes}
-            onChange={(e) => setPomo({ shortBreakMinutes: clamp(e.target.value, 1, 30, 5) })}
+            fallback={5}
+            onCommit={(v) => setPomo({ shortBreakMinutes: v })}
           />
         </Row>
         <Row label="Long break" htmlFor="pomo-long">
-          <input
+          <NumberField
             id="pomo-long"
-            type="number"
+            value={pomo.longBreakMinutes}
             min={5}
             max={60}
-            className={inputClass}
-            value={pomo.longBreakMinutes}
-            onChange={(e) => setPomo({ longBreakMinutes: clamp(e.target.value, 5, 60, 15) })}
+            fallback={15}
+            onCommit={(v) => setPomo({ longBreakMinutes: v })}
           />
         </Row>
         <Row label="Rounds before a long break" htmlFor="pomo-rounds">
-          <input
+          <NumberField
             id="pomo-rounds"
-            type="number"
+            value={pomo.roundsBeforeLongBreak}
             min={2}
             max={8}
-            className={inputClass}
-            value={pomo.roundsBeforeLongBreak}
-            onChange={(e) => setPomo({ roundsBeforeLongBreak: clamp(e.target.value, 2, 8, 4) })}
+            fallback={4}
+            onCommit={(v) => setPomo({ roundsBeforeLongBreak: v })}
           />
         </Row>
       </Section>
@@ -343,10 +334,4 @@ export function SettingsPage() {
       </Section>
     </div>
   );
-}
-
-function clamp(v: string, min: number, max: number, fallback: number): number {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.round(n)));
 }

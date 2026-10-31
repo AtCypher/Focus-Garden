@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '@/app/store/appStore';
 import { Button } from '@/app/ui/Button';
-import { Section, inputClass } from '@/app/ui/Field';
+import { Section, NumberField, inputClass } from '@/app/ui/Field';
 import { IconClose } from '@/app/ui/icons';
 
 const COLORS = [
@@ -46,20 +46,17 @@ export function TagsSection() {
               aria-label={`Rename tag ${t.name}`}
               className={inputClass}
             />
-            <input
-              type="number"
+            <NumberField
+              id={`goal-${t.id}`}
+              value={goals[t.id] ?? 0}
               min={0}
               max={3000}
+              fallback={0}
               step={15}
-              value={goals[t.id] ?? 0}
-              onChange={(e) =>
-                updateProgress((p) => ({
-                  tagGoals: { ...p.tagGoals, [t.id]: Math.max(0, Number(e.target.value) || 0) },
-                }))
-              }
+              onCommit={(v) => updateProgress((p) => ({ tagGoals: { ...p.tagGoals, [t.id]: v } }))}
               aria-label={`Weekly goal in minutes for ${t.name}`}
-              title="Weekly goal (minutes, 0 = none)"
-              className={`${inputClass} w-24`}
+              title="Weekly goal (minutes per week, 0 = none)"
+              className="w-24"
             />
             <Button
               variant="ghost"

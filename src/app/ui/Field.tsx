@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 export function Section({
   title,
@@ -76,5 +76,69 @@ export function Toggle({
         className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
       />
     </button>
+  );
+}
+
+interface NumberFieldProps {
+  id: string;
+  value: number;
+  onCommit: (value: number) => void;
+  min: number;
+  max: number;
+  /** Used when the field is left empty. */
+  fallback: number;
+  step?: number;
+  className?: string;
+  'aria-label'?: string;
+  title?: string;
+}
+
+/**
+ * A number input that lets you type freely (including clearing it) and only normalises when you
+ * leave the field or press Enter: empty becomes `fallback`, anything else is clamped to the range.
+ */
+export function NumberField({
+  id,
+  value,
+  onCommit,
+  min,
+  max,
+  fallback,
+  step,
+  className = '',
+  title,
+  ...rest
+}: NumberFieldProps) {
+  const [text, setText] = useState(String(value));
+  const [editing, setEditing] = useState(false);
+  const shown = editing ? text : String(value);
+  const commit = () => {
+    const n = text.trim() === '' ? fallback : Math.round(Number(text));
+    const next = Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+    setEditing(false);
+    if (next !== value) onCommit(next);
+  };
+  return (
+    <input
+      id={id}
+      type="number"
+      inputMode="numeric"
+      min={min}
+      max={max}
+      step={step}
+      value={shown}
+      title={title}
+      aria-label={rest['aria-label']}
+      className={`${inputClass} ${className}`}
+      onFocus={() => {
+        setText(String(value));
+        setEditing(true);
+      }}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+      }}
+    />
   );
 }
