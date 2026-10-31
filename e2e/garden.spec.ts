@@ -22,6 +22,8 @@ test('arrange by tapping a plant then a free tile, and compost a wilted plant', 
   await page.getByRole('link', { name: 'Garden' }).click();
   await expect(page.getByText('2 plants shown')).toBeVisible();
 
+  // Tile moves need the map view; beds only swap.
+  await page.getByText('Map', { exact: true }).click();
   // Arrange: pick up the healthy daisy, drop it on a free tile.
   await page.getByRole('button', { name: 'Arrange' }).click();
   const healthy = page.locator('svg[role=img] g[role=button][aria-label^="Sun Daisy, grown"]');

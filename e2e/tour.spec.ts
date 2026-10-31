@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openApp } from './helpers';
 
 test('the guided tour runs after onboarding, can be finished, and replays from Settings', async ({
   page,
@@ -25,10 +26,7 @@ test('the guided tour runs after onboarding, can be finished, and replays from S
 });
 
 test('the garden shows beds by default and can switch to the map', async ({ page }) => {
-  await page.goto('/garden?speed=fast');
-  await page.locator('main').waitFor();
-  await page.getByRole('button', { name: 'Skip', exact: true }).click();
-  await page.getByRole('button', { name: 'Skip tour' }).click();
+  await openApp(page, '/garden');
   await expect(page.locator('section[aria-label$=" bed"]')).toHaveCount(3);
   await expect(page.getByText('Nothing here yet').first()).toBeVisible();
   await page.getByText('Map', { exact: true }).click();
