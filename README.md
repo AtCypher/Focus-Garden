@@ -57,6 +57,12 @@ In development you can append `?speed=fast` to the URL to make one minute pass i
 (`?speed=normal` turns it off). The flag is ignored in production builds. A dev-only `/gallery`
 route shows every species at every stage and every companion mood.
 
+## Try it with everything unlocked
+
+`docs/demo-backup.json` is a sample backup with a level 7 garden, all species, achievements,
+finds, visitors and challenges. Import it from **Settings → Your data → Import backup** (this
+replaces the data on that device, so export your own first).
+
 ## Deploy
 
 Pushing to `main` runs `.github/workflows/deploy.yml`: lint, unit tests, build, end-to-end tests,
