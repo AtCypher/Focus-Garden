@@ -37,7 +37,16 @@ export function DataSection() {
 
   const confirmImport = () => {
     if (pending?.ok) {
-      importAll(pending.data);
+      // A file without the tour/onboarding flags should not replay them on a device that has seen them.
+      const cur = useAppStore.getState().settings;
+      importAll({
+        ...pending.data,
+        settings: {
+          ...pending.data.settings,
+          onboardingDone: pending.data.settings.onboardingDone || cur.onboardingDone,
+          tutorialDone: pending.data.settings.tutorialDone || cur.tutorialDone,
+        },
+      });
       updateProgress(new Date(), false);
       setMessage(
         `Imported ${pending.summary.sessions} sessions and ${pending.summary.plants} plants.`,

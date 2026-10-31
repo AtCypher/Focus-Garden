@@ -10,6 +10,12 @@ export async function openApp(page: Page, path = '/'): Promise<void> {
     await skip.click();
     await skip.waitFor({ state: 'hidden' });
   }
+  // The guided tour follows onboarding on first launch.
+  const skipTour = page.getByRole('button', { name: 'Skip tour' });
+  if (await skipTour.isVisible().catch(() => false)) {
+    await skipTour.click();
+    await skipTour.waitFor({ state: 'hidden' });
+  }
 }
 
 export async function setVisibility(page: Page, state: 'hidden' | 'visible'): Promise<void> {

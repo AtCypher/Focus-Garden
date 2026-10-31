@@ -3,13 +3,14 @@ import { IconBook, IconChart, IconGarden, IconSettings, IconTimer } from './ui/i
 import { LevelUpDialog } from '@/features/garden/LevelUpDialog';
 import { Toast } from './ui/Toast';
 import { Onboarding } from './Onboarding';
+import { Tour } from './tour/Tour';
 
 const links = [
-  { to: '/', label: 'Timer', Icon: IconTimer, end: true },
-  { to: '/garden', label: 'Garden', Icon: IconGarden },
-  { to: '/seeds', label: 'Seed Book', Icon: IconBook },
-  { to: '/stats', label: 'Stats', Icon: IconChart },
-  { to: '/settings', label: 'Settings', Icon: IconSettings },
+  { to: '/', label: 'Timer', Icon: IconTimer, end: true, tour: 'nav-timer' },
+  { to: '/garden', label: 'Garden', Icon: IconGarden, tour: 'nav-garden' },
+  { to: '/seeds', label: 'Seed Book', Icon: IconBook, tour: 'nav-seeds' },
+  { to: '/stats', label: 'Stats', Icon: IconChart, tour: 'nav-stats' },
+  { to: '/settings', label: 'Settings', Icon: IconSettings, tour: 'nav-settings' },
 ];
 
 export function AppLayout() {
@@ -42,8 +43,8 @@ export function AppLayout() {
           </span>
         </div>
         <ul className="mx-auto flex max-w-lg justify-around md:flex-col md:gap-1">
-          {links.map(({ to, label, Icon, end }) => (
-            <li key={to} className="flex-1 md:flex-none">
+          {links.map(({ to, label, Icon, end, tour }) => (
+            <li key={to} className="flex-1 md:flex-none" data-tour={tour}>
               <NavLink
                 to={to}
                 end={end}
@@ -73,6 +74,7 @@ export function AppLayout() {
       <LevelUpDialog />
       <Toast />
       <Onboarding />
+      <Tour />
     </div>
   );
 }

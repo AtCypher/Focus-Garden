@@ -174,6 +174,8 @@ export interface Settings {
   dailyGoalMinutes: number;
   theme: ThemePreference;
   seasons: boolean;
+  /** Garden presentation: beds (scrolling, no gestures) or the isometric map. */
+  gardenView: 'beds' | 'map';
   ambientSound: AmbientSound;
   ambientVolume: number;
   /** Optional second ambient layer. */
@@ -186,6 +188,8 @@ export interface Settings {
   wakeLock: boolean;
   notifications: boolean;
   onboardingDone: boolean;
+  /** The guided tour has been finished or skipped once. */
+  tutorialDone: boolean;
 }
 
 export interface AchievementProgress {

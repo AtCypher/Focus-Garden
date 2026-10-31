@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dailyGoalMinutes: 60,
   theme: 'system',
   seasons: true,
+  gardenView: 'beds',
   ambientSound: 'none',
   ambientVolume: 0.5,
   ambientSound2: 'none',
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   wakeLock: true,
   notifications: true,
   onboardingDone: false,
+  tutorialDone: false,
 };
 
 export const DEFAULT_WALLET: Wallet = {

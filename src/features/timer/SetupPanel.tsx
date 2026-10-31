@@ -196,7 +196,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
         />
       </section>
 
-      <section aria-label="Species" className="card p-4">
+      <section aria-label="Species" className="card p-4" data-tour="species">
         <div className="flex items-center gap-4">
           <div className="shrink-0 rounded-2xl bg-moss-50 p-1 dark:bg-moss-900">
             <PlantArt species={selected} growth={1} stage="full" size={96} />
@@ -223,7 +223,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
       </section>
 
       {mode === 'countdown' && (
-        <section aria-label="Duration" className="card p-4">
+        <section aria-label="Duration" className="card p-4" data-tour="duration">
           <DurationPicker value={minutes} onChange={setMinutes} />
         </section>
       )}
@@ -251,7 +251,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
         </section>
       )}
 
-      <section className="card flex flex-col gap-4 p-4">
+      <section className="card flex flex-col gap-4 p-4" data-tour="strictness">
         <StrictnessPicker value={strictness} onChange={setStrictness} allowLeaving={allowLeaving} />
         <label className="flex cursor-pointer items-start gap-3 text-sm">
           <input
@@ -295,7 +295,7 @@ export function SetupPanel({ onPlant, suggestedMinutes }: Props) {
         <TaskList sessionId={null} className="mt-2" />
       </section>
 
-      <Button type="submit" size="lg" className="w-full">
+      <Button type="submit" size="lg" className="w-full" data-tour="plant">
         Plant
       </Button>
       {savingPreset ? (

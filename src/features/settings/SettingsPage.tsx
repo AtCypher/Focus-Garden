@@ -15,6 +15,7 @@ import { totalFocusMinutes } from '@/features/garden/layout';
 import { Companion } from '@/art/Companion';
 import { checkForUpdates } from '@/app/updates';
 import { useUiStore } from '@/app/store/uiStore';
+import { useNavigate } from 'react-router-dom';
 import { formatHours } from '@/lib/dates';
 import { AMBIENT_OPTIONS, AmbientPlayer } from '@/features/timer/audio';
 
@@ -23,6 +24,8 @@ export function SettingsPage() {
   const update = useAppStore((s) => s.updateSettings);
   const [perm, setPerm] = useState(notificationPermission());
   const showToast = useUiStore((s) => s.showToast);
+  const setTourRequested = useUiStore((s) => s.setTourRequested);
+  const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
   const totalMinutes = useAppStore((s) => totalFocusMinutes(s.sessions));
   const pip = companionLevel(totalMinutes);
@@ -138,6 +141,21 @@ export function SettingsPage() {
             <option value="system">Follow system</option>
             <option value="light">Light</option>
             <option value="dark">Dark</option>
+          </select>
+        </Row>
+        <Row
+          label="Garden view"
+          hint="Beds scroll and show big plants; Map is the little landscape."
+          htmlFor="garden-view"
+        >
+          <select
+            id="garden-view"
+            className={inputClass}
+            value={settings.gardenView}
+            onChange={(e) => update({ gardenView: e.target.value as 'beds' | 'map' })}
+          >
+            <option value="beds">Beds</option>
+            <option value="map">Map</option>
           </select>
         </Row>
         <Row
@@ -300,6 +318,24 @@ export function SettingsPage() {
 
       <TagsSection />
       <DataSection />
+
+      <Section title="Help">
+        <Row
+          label="Guided tour"
+          hint="A short walk through the timer, garden, Seed Book and stats."
+        >
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setTourRequested(true);
+              navigate('/');
+            }}
+          >
+            Show the tutorial again
+          </Button>
+        </Row>
+      </Section>
 
       <Section title="About">
         <p className="text-sm">

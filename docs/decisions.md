@@ -199,3 +199,16 @@ Choices made where the brief was ambiguous or collided with a technical constrai
   reloaded as soon as nothing is running (no session, break or result screen), the registration is
   re-checked whenever the app becomes visible and hourly, and Settings has a "Check for updates"
   button next to the version number.
+
+## Garden redesign and tutorial
+
+- **Beds are the default garden view.** The isometric map needed panning and zooming and showed
+  plants small; on a phone that felt like work. Beds show one scrolling card per biome with large
+  plants in rows, the newest in front, plus a skyline banner that carries the level's scenery and
+  the weather. The map stays one tap away and is still used for the share image and for moving
+  things onto specific tiles. The choice is remembered in Settings.
+- **The guided tour** (`src/app/tour`) runs once after onboarding, spotlights elements tagged with
+  `data-tour`, walks through all five pages, and can be replayed from Settings → Help. Imports keep
+  the device's tour and onboarding state so an older backup does not replay them.
+- **Backup of the previous garden**: branch `backup/isometric-garden` on GitHub holds the last
+  version before this change.

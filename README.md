@@ -19,9 +19,11 @@ paywalled features. Everything stays on your device unless you export it yoursel
 - **A companion**, Pip (rename it), who waters, hums and dozes beside your plant, and is kind rather
   than scolding when something wilts.
 - **A garden that evolves** with lifetime focus time through seven levels, from a bare patch to a
-  night-time sanctuary with fireflies. Biomes start grey and regain colour as they fill. Isometric
-  view with pan and pinch-zoom, Today/Week/Month/Year/All views, plant details with notes, an
-  arrange mode, day/night and seasonal tints, and a shareable PNG.
+  night-time sanctuary with fireflies. Biomes start grey and regain colour as they fill. Scrolling
+  beds per biome by default, an isometric map view with pan and pinch-zoom, Today/Week/Month/Year/All
+  views, plant details with notes, an arrange mode, composting, day/night and seasonal tints, and a
+  shareable PNG.
+- **A guided tour** on first launch, replayable from Settings.
 - **Dew**, the in-app currency: 1 per focused minute with bonuses for stricter modes and the first
   session of the day. Spend it on species, decorations and companion outfits in the Seed Book.
 - **Stats**: dashboard, charts by day, tag and hour, a daily goal, streaks with earned streak

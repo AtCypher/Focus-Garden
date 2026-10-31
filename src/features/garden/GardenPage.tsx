@@ -11,11 +11,13 @@ import { nextGardenLevel, levelProgress } from '@/data/gardenLevels';
 import { formatHours } from '@/lib/dates';
 import { GardenScene } from './GardenScene';
 import { PanZoom } from './PanZoom';
+import { GardenBeds } from './GardenBeds';
 import { PlantDetail } from './PlantDetail';
 import { useGarden } from './useGarden';
 import { PERIODS, type Period } from './periods';
 import { season as seasonOf, timeOfDay, TIME_TINTS } from './daylight';
-import { biomeRegions } from './layout';
+import { biomeRegions, nextFreeTile, type GardenLayout } from './layout';
+import { unlockedBiomes, type GardenLevel } from '@/data/gardenLevels';
 import { renderGardenPng, shareOrDownload } from './shareImage';
 import { ambient, AmbientPlayer } from '@/features/timer/audio';
 import { recordSightings, visitorsToday } from '@/features/collection/rituals';
@@ -32,6 +34,8 @@ export function GardenPage() {
   const [arranging, setArranging] = useState(false);
   const [moving, setMoving] = useState<string | null>(null);
   const seasons = useAppStore((s) => s.settings.seasons);
+  const view = useAppStore((s) => s.settings.gardenView);
+  const updateSettings = useAppStore((s) => s.updateSettings);
   const movePlant = useAppStore((s) => s.movePlant);
   const removePlant = useAppStore((s) => s.removePlant);
   const removeWiltedPlants = useAppStore((s) => s.removeWiltedPlants);
@@ -221,8 +225,47 @@ export function GardenPage() {
         }}
       />
 
+      <div className="flex items-center justify-between gap-2" data-tour="garden">
+        <SegmentedControl
+          label="Garden view"
+          className="w-44"
+          options={[
+            { value: 'beds', label: 'Beds' },
+            { value: 'map', label: 'Map' },
+          ]}
+          value={view}
+          onChange={(v) => {
+            updateSettings({ gardenView: v });
+            setMoving(null);
+            setPlacing(null);
+          }}
+        />
+        <p className="text-muted text-xs">
+          {view === 'beds'
+            ? 'Scroll to browse. Tap a plant for details.'
+            : 'Drag to pan, pinch or scroll to zoom.'}
+        </p>
+      </div>
+
+      {view === 'beds' && (
+        <GardenBeds
+          level={level}
+          plants={shown}
+          decorations={layout.decorations}
+          restoration={restoration}
+          time={time}
+          season={seasons ? seasonOf(new Date(now)) : null}
+          visitors={visitors}
+          weather={weather}
+          selectedId={selected}
+          arranging={arranging}
+          onSelectPlant={onPick}
+          onSelectDecoration={onPick}
+        />
+      )}
+
       <PanZoom
-        className="h-[52vh] min-h-72 rounded-3xl"
+        className={view === 'map' ? 'h-[52vh] min-h-72 rounded-3xl' : 'hidden h-0 w-0'}
         style={{ background: TIME_TINTS[time].skyBottom }}
       >
         <GardenScene
@@ -312,8 +355,12 @@ export function GardenPage() {
             {placing
               ? `Tap an empty tile to place the ${DECORATION_INFO[placing].name.toLowerCase()}.`
               : moving
-                ? 'Picked up. Tap a blue tile to move it there, or tap another plant to swap places.'
-                : 'Tap a plant or decoration to pick it up. Blue tiles are free. Or place something you own:'}
+                ? view === 'beds'
+                  ? 'Picked up. Tap another plant to swap places (switch to Map to move onto a free tile).'
+                  : 'Picked up. Tap a blue tile to move it there, or tap another plant to swap places.'
+                : view === 'beds'
+                  ? 'Tap a plant to pick it up, then another to swap places. Or place something you own:'
+                  : 'Tap a plant or decoration to pick it up. Blue tiles are free. Or place something you own:'}
           </p>
           {inventory.length > 0 ? (
             <div className="flex flex-wrap gap-2" role="group" aria-label="Decorations to place">
@@ -324,8 +371,19 @@ export function GardenPage() {
                   variant={placing === kind ? 'primary' : 'secondary'}
                   aria-pressed={placing === kind}
                   onClick={() => {
-                    setPlacing((p) => (p === kind ? null : kind));
                     setMoving(null);
+                    if (view === 'beds') {
+                      // No tiles to tap in the beds view: put it on the first free tile.
+                      const tile = nextFreeAnywhere(level, layout.occupied);
+                      if (tile) {
+                        placeDecoration(kind, tile);
+                        showToast(
+                          `${DECORATION_INFO[kind].name} placed. Switch to Map to move it.`,
+                        );
+                      } else showToast('No free tile left.');
+                      return;
+                    }
+                    setPlacing((p) => (p === kind ? null : kind));
                   }}
                 >
                   {DECORATION_INFO[kind].name} ×{free}
@@ -419,4 +477,12 @@ export function GardenPage() {
       </ul>
     </div>
   );
+}
+
+function nextFreeAnywhere(level: GardenLevel, occupied: GardenLayout['occupied']) {
+  for (const biome of unlockedBiomes(level.level)) {
+    const t = nextFreeTile(level, biome, occupied);
+    if (t) return t;
+  }
+  return null;
 }
