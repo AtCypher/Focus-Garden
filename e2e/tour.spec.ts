@@ -5,7 +5,7 @@ test('the guided tour runs after onboarding, can be finished, and replays from S
 }) => {
   await page.goto('/?speed=fast');
   await page.locator('main').waitFor();
-  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('button', { name: 'Skip', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Welcome to Grove' })).toBeVisible();
   for (let i = 0; i < 8; i++) await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByRole('dialog', { name: 'Make it yours' })).toBeVisible();
@@ -27,7 +27,7 @@ test('the guided tour runs after onboarding, can be finished, and replays from S
 test('the garden shows beds by default and can switch to the map', async ({ page }) => {
   await page.goto('/garden?speed=fast');
   await page.locator('main').waitFor();
-  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('button', { name: 'Skip', exact: true }).click();
   await page.getByRole('button', { name: 'Skip tour' }).click();
   await expect(page.locator('section[aria-label$=" bed"]')).toHaveCount(3);
   await expect(page.getByText('Nothing here yet').first()).toBeVisible();
